@@ -464,15 +464,623 @@ local function addDexButton(name, text, onClick)
     return button
 end
 
--- 添加Dex工具按钮
 addDexButton("HardcoreDex", "Hardcore DEX", function()
     HardcoreDex = loadstring(game:HttpGet("https://github.com/AZYsGithub/DexPlusPlus/releases/latest/download/out.lua"))()
 end)
 
--- 添加Cobalt监控工具按钮
 addDexButton("Cobalt", "Cobalt", function()
     local url = "https://raw.githubusercontent.com/Zero0Star/RipperMPSound/master/CobaltSpy.lua"
     loadstring(game:HttpGet(url))()
+end)
+
+addDexButton("Deleteall", "Delete all", function()
+    local Event = game:GetService("ReplicatedStorage").RemotesFolder.AdminPanelRunCommand
+Event:FireServer(
+    "DELETE ALL",
+    {}
+)
+    local function deleteDirectChildModels()
+    local workspace = game:GetService("Workspace")
+    local modelNames = {
+        "A-200", "A60", "Amin-60", "Black-A60", "Deer god", "DeerGod",
+        "Frostbite", "@&%^#*$Indescribable God!@$*&^!Q(* ", "LightSpeed",
+        "Rebound", "Ripper", "Following_ENEMY", "Silence", "smiler", "Chainsmoker"
+    }
+    
+    for _, name in ipairs(modelNames) do
+        local model = workspace:FindFirstChild(name)
+        if model and model:IsA("Model") then
+            model:Destroy()
+        end
+    end
+end
+
+deleteDirectChildModels()
+end)
+
+addDexButton("JeffTheKillerHighlight", "JeffKiller Light", function()
+    local Workspace = game:GetService("Workspace")
+
+    if not _G.JeffHighlightState then
+        _G.JeffHighlightState = {
+            isEnabled = false,
+            highlights = {},
+            connections = {}
+        }
+    end
+    
+    local state = _G.JeffHighlightState
+
+    local function findAllJeffModels()
+        local jeffModels = {}
+
+        local function searchInModel(model)
+            if model.Name == "JeffTheKiller" and model:IsA("Model") then
+                table.insert(jeffModels, model)
+            end
+
+            for _, child in pairs(model:GetChildren()) do
+                searchInModel(child)
+            end
+        end
+
+        for _, item in pairs(Workspace:GetChildren()) do
+            searchInModel(item)
+        end
+        
+        return jeffModels
+    end
+
+    local function findAllBaseParts(model)
+        local parts = {}
+        
+        if not model or not model:IsA("Model") then
+            return parts
+        end
+        
+        for _, child in pairs(model:GetDescendants()) do
+            if child:IsA("BasePart") and child.Transparency < 1 then
+                table.insert(parts, child)
+            end
+        end
+        
+        return parts
+    end
+
+    local function createHighlight(part, jeffIndex, partIndex)
+        if not part or not part:IsA("BasePart") then
+            return nil
+        end
+        
+        local highlightName = "JeffHighlight" .. jeffIndex .. "_" .. partIndex
+        if part:FindFirstChild(highlightName) then
+            return part:FindFirstChild(highlightName)
+        end
+        
+        local highlight = Instance.new("Highlight")
+        highlight.Name = highlightName
+        highlight.FillColor = Color3.fromRGB(255, 0, 0)  
+        highlight.OutlineColor = Color3.fromRGB(200, 0, 0)
+        highlight.FillTransparency = 0.7
+        highlight.OutlineTransparency = 0.3
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Adornee = part
+        highlight.Parent = part
+        
+        state.highlights[highlight] = true
+        return highlight
+    end
+
+    local function startMonitoring()
+        local function setupModelListener(model)
+            local connection = model.DescendantAdded:Connect(function(descendant)
+                if state.isEnabled and descendant:IsA("BasePart") and descendant.Transparency < 1 then
+
+                    local jeffModels = findAllJeffModels()
+                    for jeffIndex, jeffModel in ipairs(jeffModels) do
+                        if descendant:IsDescendantOf(jeffModel) then
+                            local parts = findAllBaseParts(jeffModel)
+                            for partIndex, part in ipairs(parts) do
+                                if part == descendant then
+                                    createHighlight(part, jeffIndex, partIndex)
+                                    break
+                                end
+                            end
+                            break
+                        end
+                    end
+                end
+            end)
+            
+            table.insert(state.connections, connection)
+        end
+
+        local jeffModels = findAllJeffModels()
+        for _, jeffModel in ipairs(jeffModels) do
+            setupModelListener(jeffModel)
+        end
+
+        local workspaceConnection = Workspace.DescendantAdded:Connect(function(descendant)
+            if state.isEnabled and descendant.Name == "JeffTheKiller" and descendant:IsA("Model") then
+                setupModelListener(descendant)
+                task.wait(0.1)
+
+                local parts = findAllBaseParts(descendant)
+                for partIndex, part in ipairs(parts) do
+                    local jeffModels = findAllJeffModels()
+                    for jeffIndex, jeffModel in ipairs(jeffModels) do
+                        if part:IsDescendantOf(jeffModel) then
+                            createHighlight(part, jeffIndex, partIndex)
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+        
+        table.insert(state.connections, workspaceConnection)
+    end
+
+    local function scanAndHighlightAll()
+        local jeffModels = findAllJeffModels()
+        
+        for jeffIndex, jeffModel in ipairs(jeffModels) do
+            local parts = findAllBaseParts(jeffModel)
+            
+            for partIndex, part in ipairs(parts) do
+                createHighlight(part, jeffIndex, partIndex)
+            end
+        end
+    end
+
+    local function cleanupAll()
+
+        for highlight, _ in pairs(state.highlights) do
+            if highlight and highlight.Parent then
+                highlight:Destroy()
+            end
+        end
+        state.highlights = {}
+
+        for _, connection in ipairs(state.connections) do
+            if connection and typeof(connection) == "RBXScriptConnection" then
+                connection:Disconnect()
+            end
+        end
+        state.connections = {}
+        
+        state.isEnabled = false
+    end
+
+    if state.isEnabled then
+        cleanupAll()
+    else
+        state.isEnabled = true
+        scanAndHighlightAll()
+        startMonitoring()
+    end
+end)
+
+addDexButton("KeyDoorHighlight", "KeyDoorHighLight", function()
+    local Workspace = game:GetService("Workspace")
+    local CurrentRooms = Workspace:WaitForChild("CurrentRooms")
+    
+    -- 状态管理 - 使用全局变量确保多个调用同步
+    if not _G.KeyDoorHighlightState then
+        _G.KeyDoorHighlightState = {
+            isEnabled = false,
+            highlights = {},
+            connections = {},
+            currentRoomCount = 0
+        }
+    end
+    
+    local state = _G.KeyDoorHighlightState
+    
+    -- 为钥匙查找可高亮的所有部件
+    local function findKeyParts(model)
+        if not model or not model:IsA("Model") then
+            return {}
+        end
+        
+        local keyParts = {}
+        
+        for _, child in pairs(model:GetDescendants()) do
+            if child:IsA("BasePart") and child.Transparency < 1 then
+                table.insert(keyParts, child)
+            end
+        end
+        
+        return keyParts
+    end
+    
+    -- 为门查找可高亮的部件
+    local function findDoorPart(door)
+        if not door then return nil end
+        
+        if door:IsA("BasePart") then
+            return door
+        end
+        
+        if door:IsA("Model") then
+            if door.PrimaryPart and door.PrimaryPart:IsA("BasePart") then
+                return door.PrimaryPart
+            end
+            
+            for _, child in pairs(door:GetDescendants()) do
+                if child:IsA("BasePart") and child.Transparency < 1 then
+                    return child
+                end
+            end
+        end
+        
+        return nil
+    end
+    
+    -- 创建高亮效果
+    local function createHighlight(target, name)
+        if not target or not target:IsA("BasePart") then
+            return nil
+        end
+        
+        -- 检查是否已有高亮
+        if target:FindFirstChild(name .. "Highlight") then
+            return target:FindFirstChild(name .. "Highlight")
+        end
+        
+        local highlight = Instance.new("Highlight")
+        highlight.Name = name .. "Highlight"
+        highlight.FillColor = Color3.fromRGB(0, 255, 0)
+        highlight.OutlineColor = Color3.fromRGB(0, 200, 0)
+        highlight.FillTransparency = 0.7
+        highlight.OutlineTransparency = 0.3
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Adornee = target
+        highlight.Parent = target
+        
+        state.highlights[highlight] = true
+        return highlight
+    end
+    
+    -- 扫描并高亮当前所有钥匙和门
+    local function scanAndHighlightAll()
+        for _, room in pairs(CurrentRooms:GetChildren()) do
+            if room:IsA("Model") then
+                -- 查找并高亮钥匙的所有部件
+                local assets = room:FindFirstChild("Assets")
+                if assets then
+                    local keyObtain = assets:FindFirstChild("KeyObtain")
+                    if keyObtain then
+                        local keyParts = findKeyParts(keyObtain)
+                        for _, part in ipairs(keyParts) do
+                            createHighlight(part, "Key")
+                        end
+                    end
+                end
+                
+                -- 查找并高亮门
+                local door = room:FindFirstChild("Door")
+                if door then
+                    local doorPart = findDoorPart(door)
+                    if doorPart then
+                        createHighlight(doorPart, "Door")
+                    end
+                end
+            end
+        end
+    end
+    
+    -- 监听新房间添加
+    local function startMonitoring()
+        -- 监听新房间添加
+        local roomAddedConnection = CurrentRooms.ChildAdded:Connect(function(room)
+            if state.isEnabled and room:IsA("Model") then
+                task.wait(0.3)
+                
+                -- 扫描钥匙
+                local assets = room:FindFirstChild("Assets")
+                if assets then
+                    local keyObtain = assets:FindFirstChild("KeyObtain")
+                    if keyObtain then
+                        local keyParts = findKeyParts(keyObtain)
+                        for _, part in ipairs(keyParts) do
+                            createHighlight(part, "Key")
+                        end
+                    end
+                end
+                
+                -- 扫描门
+                local door = room:FindFirstChild("Door")
+                if door then
+                    local doorPart = findDoorPart(door)
+                    if doorPart then
+                        createHighlight(doorPart, "Door")
+                    end
+                end
+            end
+        end)
+        
+        table.insert(state.connections, roomAddedConnection)
+        
+        -- 监听现有房间变化
+        for _, room in pairs(CurrentRooms:GetChildren()) do
+            if room:IsA("Model") then
+                -- 监听Assets变化
+                local assetsConnection
+                assetsConnection = room:GetPropertyChangedSignal("Assets"):Connect(function()
+                    if state.isEnabled and room:FindFirstChild("Assets") then
+                        local assets = room.Assets
+                        task.wait(0.1)
+                        
+                        local keyObtain = assets:FindFirstChild("KeyObtain")
+                        if keyObtain then
+                            task.wait(0.1)
+                            local keyParts = findKeyParts(keyObtain)
+                            for _, part in ipairs(keyParts) do
+                                createHighlight(part, "Key")
+                            end
+                        end
+                    end
+                end)
+                
+                table.insert(state.connections, assetsConnection)
+                
+                -- 监听Door变化
+                local doorConnection
+                doorConnection = room:GetPropertyChangedSignal("Door"):Connect(function()
+                    if state.isEnabled and room:FindFirstChild("Door") then
+                        local door = room.Door
+                        local doorPart = findDoorPart(door)
+                        if doorPart then
+                            createHighlight(doorPart, "Door")
+                        end
+                    end
+                end)
+                
+                table.insert(state.connections, doorConnection)
+            end
+        end
+    end
+    
+    -- 清理所有高亮和连接
+    local function cleanupAll()
+        -- 清理高亮效果
+        for highlight, _ in pairs(state.highlights) do
+            if highlight and highlight.Parent then
+                highlight:Destroy()
+            end
+        end
+        state.highlights = {}
+        
+        -- 清理连接
+        for _, connection in ipairs(state.connections) do
+            if connection and typeof(connection) == "RBXScriptConnection" then
+                connection:Disconnect()
+            end
+        end
+        state.connections = {}
+        
+        state.isEnabled = false
+        state.currentRoomCount = 0
+    end
+    
+    -- 主逻辑
+    if state.isEnabled then
+        cleanupAll()
+    else
+        state.isEnabled = true
+        scanAndHighlightAll()
+        startMonitoring()
+    end
+end)
+
+addDexButton("CuriousLight", "Curious Light", function()
+
+    local Event = game:GetService("ReplicatedStorage").RemotesFolder.AdminPanelRunCommand
+    Event:FireServer("Break Lights", {["Lights Affected"] = 100, ["Affect All Rooms"] = true})
+    task.wait(1)
+    Event:FireServer("LightRoom", {["Light Color"] = Color3.new(0.80784314870834, 0.63644915819168, 0)})
+    task.wait(0.1)
+    Event:FireServer("DELETE ALL", {})
+    task.wait(2)
+    
+    local function deleteDirectChildModels()
+        for _, name in ipairs({"A-200", "A60", "Amin-60", "Black-A60", "Deer god", "DeerGod", "Frostbite", "@&%^#*$Indescribable God!@$*&^!Q(* ", "LightSpeed", "Rebound", "Ripper", "Following_ENEMY", "Silence", "smiler", "Chainsmoker"}) do
+            local model = workspace:FindFirstChild(name)
+            if model and model:IsA("Model") then model:Destroy() end
+        end
+    end
+    deleteDirectChildModels()
+    
+    function GetRoom()
+        return workspace.CurrentRooms:FindFirstChild(game.ReplicatedStorage.GameData.LatestRoom.Value)
+    end
+    
+    function LoadCustomInstance(source)
+        local model
+        while task.wait() and not model do
+            if tonumber(source) then
+                local success, result = pcall(function() return game:GetObjects("rbxassetid://"..tostring(source))[1] end)
+                if success and result then model = result end
+            end
+        end
+        if model then
+            model.Parent = workspace
+            for _, obj in ipairs(model:GetDescendants()) do
+                if obj:IsA("Script") or obj:IsA("LocalScript") then obj:Destroy() end
+            end
+        end
+        return model
+    end
+    
+    local s = LoadCustomInstance("78378481962514")
+    if not s then return end
+    s.Name = "CuriLight"
+    
+    local entity = s:FindFirstChildWhichIsA("BasePart")
+    if entity then entity.CFrame = GetRoom():WaitForChild("RoomEntrance").CFrame * CFrame.new(0,5,-25) end
+    
+    pcall(function()
+        local room = workspace.CurrentRooms:FindFirstChild(tostring(game.ReplicatedStorage.GameData.LatestRoom.Value))
+        if room then
+            for _, obj in ipairs(room:GetDescendants()) do
+                if obj.Name == "PlaySound" and obj:IsA("Sound") then
+                    obj:Stop() obj.Playing = false obj.TimePosition = 0 obj.Looped = false
+                end
+            end
+            local fireplace = room.Assets.Fireplace.Fireplace_Logs
+            fireplace.ToolEventPrompt.Enabled = false
+            local log = fireplace.Log
+            log.SparkParticles.Enabled = false
+            log.SmokeParticles.Enabled = false
+            log.FireParticles.Enabled = false
+            log.FireLight.Enabled = false
+        end
+    end)
+    task.wait(0.5)
+    
+    function GitAud(soundgit, filename)
+        local url = soundgit
+        local FileName = filename
+        writefile(FileName..".mp3", game:HttpGet(url))
+        return (getcustomasset or getsynasset)(FileName..".mp3")
+    end
+    function CustomGitSound(soundlink, vol, filename)
+        local sound = Instance.new("Sound")
+        sound.SoundId = GitAud(soundlink, filename)
+        sound.Parent = workspace
+        sound.Name = filename or "CL"
+        sound.Volume = vol or 1
+        sound:Play()
+        return sound
+    end
+    
+    local targetAudioUrl = "https://github.com/Zero0star/RipperMPSound/blob/master/CuriLightSpeak.mp3?raw=true"
+    local volume = 2
+    local localFileName = "CruiMu"
+    
+    local function setupCuriLightFeatures()
+        local CuriLight = workspace:FindFirstChild("CuriLight")
+        if not CuriLight or not CuriLight:IsA("Model") then return end
+        
+        local humanoid = CuriLight:FindFirstChildOfClass("Humanoid")
+        if not humanoid then
+            humanoid = Instance.new("Humanoid")
+            humanoid.Name = "Humanoid"
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+            humanoid.AutoRotate = false
+            humanoid.Parent = CuriLight
+        end
+        
+        local function playAnimation()
+            local animator = humanoid:FindFirstChildOfClass("Animator")
+            if not animator then animator = Instance.new("Animator") animator.Parent = humanoid end
+            
+            local animationId = "rbxassetid://122746752555782"
+            local success, errorMsg = pcall(function()
+                local animation = Instance.new("Animation")
+                animation.AnimationId = animationId
+                animation.Name = "CuriLightAnimation"
+                local animationTrack = humanoid:LoadAnimation(animation)
+                if animationTrack then 
+                    animationTrack.Looped = true
+                    animationTrack:Play()
+                    return animationTrack
+                end
+                return nil
+            end)
+            
+            if not success then warn("NO:", errorMsg) end
+        end
+        
+        playAnimation()
+        
+        local function getPrimaryPart(model)
+            if model.PrimaryPart then return model.PrimaryPart end
+            local parts = {"HumanoidRootPart", "Head", "Torso", "UpperTorso", "Part"}
+            for _, partName in ipairs(parts) do
+                local part = model:FindFirstChild(partName)
+                if part and part:IsA("BasePart") then return part end
+            end
+            for _, child in ipairs(model:GetChildren()) do
+                if child:IsA("BasePart") then return child end
+            end
+            return nil
+        end
+        
+        local curiLightPart = getPrimaryPart(CuriLight)
+        if not curiLightPart then return end
+        
+        local CONFIG = {ROTATION_SPEED = 5, SMOOTHNESS = 0.1, HEIGHT_OFFSET = 0, MAX_DISTANCE = 100, ENABLED = true}
+        local lastUpdateTime = tick()
+        local connection
+        
+        local function updateLookAt()
+            if not CONFIG.ENABLED then return end
+            local character = game.Players.LocalPlayer.Character
+            if not character then return end
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if not humanoidRootPart then return end
+            local distance = (humanoidRootPart.Position - curiLightPart.Position).Magnitude
+            if distance > CONFIG.MAX_DISTANCE then return end
+            local targetPosition = humanoidRootPart.Position + Vector3.new(0, CONFIG.HEIGHT_OFFSET, 0)
+            local curiLightPosition = curiLightPart.Position
+            local direction = (targetPosition - curiLightPosition).Unit
+            local targetLookAt = CFrame.lookAt(curiLightPosition, curiLightPosition + direction)
+            local _, currentY, _ = curiLightPart.CFrame:ToOrientation()
+            local _, targetY, _ = targetLookAt:ToOrientation()
+            local yawDifference = targetY - currentY
+            if yawDifference > math.pi then yawDifference = yawDifference - 2 * math.pi
+            elseif yawDifference < -math.pi then yawDifference = yawDifference + 2 * math.pi end
+            local deltaTime = tick() - lastUpdateTime
+            lastUpdateTime = tick()
+            local lerpAmount = 1 - math.exp(-CONFIG.ROTATION_SPEED * deltaTime)
+            local lerpedY = currentY + yawDifference * lerpAmount
+            local newCFrame = CFrame.new(curiLightPosition) * CFrame.Angles(0, lerpedY, 0)
+            curiLightPart.CFrame = newCFrame
+        end
+        
+        connection = game:GetService("RunService").Heartbeat:Connect(updateLookAt)
+        
+        game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+            if input.KeyCode == Enum.KeyCode.T and not gameProcessed then CONFIG.ENABLED = not CONFIG.ENABLED end
+        end)
+        
+        return CuriLight, connection
+    end
+    
+    local curiModel, curiConnection = setupCuriLightFeatures()
+    task.wait(5)
+    
+    local sound = CustomGitSound(targetAudioUrl, volume, localFileName)
+    
+    task.wait(1)
+    
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Dead Again",true)
+    task.wait(3)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("You know better than I how to save yourself.",true)
+    task.wait(2.5)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("OH",true)
+    task.wait(1.4)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("I think you are using something called admin.",true)
+    task.wait(2.8)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Sorry..",true)
+    task.wait(2.2)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("But my appearance is not to save you.",true)
+    task.wait(2.5)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("In short, be careful next time...",true)
+    task.wait(2.2)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("However, I will always keep an eye on you.",true)
+    task.wait(4)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Okey..",true)
+    task.wait(2)
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("See U Again",true)
+    
+    sound.Ended:Wait()
+    
+    if curiConnection then curiConnection:Disconnect() end
+    if curiModel then curiModel:Destroy() end
 end)
 
 local function addMonsterButton(name, text, onClick)
@@ -676,7 +1284,7 @@ addMonsterButton("Ripper", "Ripper", function()
         elseif getcustomasset then
             assetPath = getcustomasset(fullFileName)
         else
-            warn("[GitAud] 当前环境不支持 getcustomasset 或 getsynasset")
+            
             return nil
         end
         return assetPath
@@ -2699,19 +3307,86 @@ addMonsterButton("Hatred", "!!HatRed!!", function()
     _G.StopMiniGame = cleanup
 end)
 
+addMonsterButton("A500", "A-500", function()
+   function GitAud(soundgit, filename)
+    local url = soundgit
+    local FileName = filename
+    writefile(FileName .. ".mp3", game:HttpGet(url))
+    return (getcustomasset or getsynasset)(FileName .. ".mp3")
+end
 
-addMonsterButton("A60", "A-60", function()
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Entity-Spawner-V2/main/init.luau"))()
+function CustomGitSound(soundlink, vol, filename)
+    local sound = Instance.new("Sound")
+    sound.SoundId = GitAud(soundlink, filename)
+    sound.Parent = workspace
+    sound.Name = filename or "A500MUSIC"
+    sound.Volume = vol or 1
+    return sound
+end
+
+local function main()
+
+    local targetAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/A500Moving.mp3?raw=true"
+    local volume = 2
+    local localFileName = "A500MUSIC"
+    
+    local sound = CustomGitSound(targetAudioUrl, volume, localFileName)
+
+    game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+
+    sound:Play()
+    
+    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
     local entity = spawner.Create({
-        Entity = {Name = "A60", Asset = "117633452506607", HeightOffset = 0},
-        Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
-        Earthquake = {Enabled = false},
-        CameraShake = {Enabled = true, Range = 200, Values = {1.5, 20, 0.1, 1}},
-        Movement = {Speed = 350, Delay = 3, Reversed = false},
-        Rebounding = {Enabled = true, Type = "ambush", Min = 5, Max = 5, Delay = math.random(10, 30) / 10},
-        Damage = {Enabled = true, Range = 100, Amount = 125},
-        Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
-        Death = {Type = "Guiding", Hints = {"你死于A60", "...", "你会从Ambush那学会点什么", "他随时可能出现!"}, Cause = ""}
+        Entity = {
+            Name = "A500",
+            Asset = "121633960606961",
+            HeightOffset = 0.3
+        },
+        Lights = {
+            Flicker = {
+                Enabled = false,
+                Duration = 10
+            },
+            Shatter = false,
+            Repair = false
+        },
+        Earthquake = {
+            Enabled = false
+        },
+        CameraShake = {
+            Enabled = true,
+            Range = 200,
+            Values = {1.5, 20, 0.1, 1}
+        },
+        Movement = {
+            Speed = 90,
+            Delay = 25,
+            Reversed = false
+        },
+        Rebounding = {
+            Enabled = true,
+            Type = "ambush",
+            Min = 30,
+            Max = 30,
+            Delay = math.random(10, 30) / 10
+        },
+        Damage = {
+            Enabled = true,
+            Range = 20,
+            Amount = 50
+        },
+        Crucifixion = {
+            Enabled = false,
+            Range = 20,
+            Resist = false,
+            Break = true
+        },
+        Death = {
+            Type = "Guiding",
+            Hints = {"你死于A500", "这是很坏的结局", "你需要不停的跑!", "保证自己在两分钟内不被追上"},
+            Cause = ""
+        }
     })
     
     entity:SetCallback("OnRebounding", function(startOfRebound)
@@ -2746,29 +3421,213 @@ addMonsterButton("A60", "A-60", function()
     
     entity:Run()
     
-    task.wait(1)
-    
-    local face = workspace:WaitForChild("A60"):WaitForChild("RushNew"):WaitForChild("Main"):WaitForChild("Face")
+    local face = workspace:WaitForChild("A500"):WaitForChild("RushNew"):WaitForChild("Main"):WaitForChild("Face")
     if face and face:IsA("ParticleEmitter") then
-        while true do
-            face.Texture = "rbxassetid://12145534911"
-            wait(0.1)
-            face.Texture = "rbxassetid://12145554242"
-            wait(0.1)
-            face.Texture = "rbxassetid://12145599498"
-            wait(0.1)
-            face.Texture = "rbxassetid://12145599275"
-            wait(0.1)
-            face.Texture = "rbxassetid://12155335619"
-            wait(0.1)
-            face.Texture = "rbxassetid://12145598814"
-            wait(0.1)
-            face.Texture = "rbxassetid://12146135062"
-            wait(0.1)
-            face.Texture = "rbxassetid://11378285585"
-            wait(0.1)
-        end
+        task.spawn(function()
+            local textures = {
+                "rbxassetid://109080249848293",
+                "rbxassetid://138164251853595",
+                "rbxassetid://129267921615075",
+                "rbxassetid://138164251853595",
+                "rbxassetid://102573027299916"
+            }
+            while true do
+                for _, texture in ipairs(textures) do
+                    face.Texture = texture
+                    task.wait(0.1)
+                end
+            end
+        end)
     end
+    
+    task.wait(15)
+    
+    local Event = game:GetService("ReplicatedStorage").RemotesFolder.AdminPanelRunCommand
+    
+    Event:FireServer(
+        "Apply Changes",
+        {
+            Players = {
+                QWQ75321 = "QWQ75321",
+                sppvve = "sppvve"
+            },
+            ["Max Health"] = 100,
+            ["Allow Sliding"] = true,
+            ["Star Shield"] = 100,
+            ["Speed Boost"] = 20,
+            Health = 100,
+            ["Allow Jumping"] = true,
+            ["God Mode"] = true
+        }
+    )
+    
+    Event:FireServer(
+        "Give Items",
+        {
+            Players = {
+                sppvve = "sppvve",
+                QWQ75321 = "QWQ75321"
+            },
+            Items = {
+                Multitool = "Multitool"
+            }
+        }
+    )
+    
+    if sound and sound.IsPlaying then
+        sound.Ended:Wait()
+    end
+    
+    local a500Model = workspace:FindFirstChild("A500")
+    if a500Model then
+        a500Model:Destroy()
+    end
+    
+    Event:FireServer(
+        "Apply Changes",
+        {
+            Players = {
+                QWQ75321 = "QWQ75321",
+                sppvve = "sppvve"
+            },
+            ["Max Health"] = 100,
+            ["Allow Sliding"] = false,
+            ["Star Shield"] = 0,
+            ["Speed Boost"] = 0,
+            Health = 100,
+            ["Allow Jumping"] = false,
+            ["God Mode"] = false
+        }
+    )
+    
+    if sound then
+        sound:Destroy()
+    end
+end
+
+local success, err = pcall(main)
+if not success then
+
+end
+end)
+
+addMonsterButton("A60", "A-60", function()
+    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local entity = spawner.Create({
+	Entity = {
+		Name = "A60",
+		Asset = "117633452506607",
+		HeightOffset = 0
+	},
+	Lights = {
+		Flicker = {
+			Enabled = false,
+			Duration = 10
+		},
+		Shatter = false,
+		Repair = false
+	},
+	Earthquake = {
+		Enabled = false
+	},
+	CameraShake = {
+		Enabled = true,
+		Range = 200,
+		Values = {1.5, 20, 0.1, 1}
+	},
+	Movement = {
+		Speed = 350,
+		Delay = 3,
+		Reversed = false
+	},
+	Rebounding = {
+		Enabled = true,
+		Type = "ambush",
+		Min = 5,
+		Max = 5,
+		Delay = math.random(10, 30) / 10
+	},
+	Damage = {
+		Enabled = true,
+		Range = 100,
+		Amount = 125
+	},
+	Crucifixion = {
+		Enabled = true,
+		Range = 100,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding",
+		Hints = {"你死于A60", "...", "你会从Ambush那学会点什么", "他随时可能出现!"},
+		Cause = ""
+	}
+})
+
+---====== Debug entity ======---
+
+entity:SetCallback("OnRebounding", function(startOfRebound)
+	-- Variables for the entity
+	local entityModel = entity.Model
+	local main = entityModel:WaitForChild("Main")
+	local attachment = main:WaitForChild("Attachment")
+	local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
+	local sounds = {
+		footsteps = main:WaitForChild("Footsteps"),
+		playSound = main:WaitForChild("PlaySound"),
+		switch = main:WaitForChild("Switch"),
+		switchBack = main:WaitForChild("SwitchBack")
+	}
+
+	-- Toggle particle emitters and lights within the entityModel
+	-- To switch between green & red state
+	for _, c in attachment:GetChildren() do
+		c.Enabled = (not startOfRebound)
+	end
+	for _, c in AttachmentSwitch:GetChildren() do
+		c.Enabled = startOfRebound
+	end
+
+	-- Play sounds
+	if startOfRebound == true then
+		sounds.footsteps.PlaybackSpeed = 0.35
+		sounds.playSound.PlaybackSpeed = 0.25
+		sounds.switch:Play()
+	else
+		sounds.footsteps.PlaybackSpeed = 0.25
+		sounds.playSound.PlaybackSpeed = 0.16
+		sounds.switchBack:Play()
+	end
+	
+end)
+
+---====== Run entity ======---
+
+entity:Run()
+
+local face = workspace:WaitForChild("A60"):WaitForChild("RushNew"):WaitForChild("Main"):WaitForChild("Face")
+if face and face:IsA("ParticleEmitter") then
+    while true do
+        face.Texture = "rbxassetid://12145534911"
+        wait(0.1)
+        face.Texture = "rbxassetid://12145554242"
+        wait(0.1)
+        face.Texture = "rbxassetid://12145599498"
+        wait(0.1)
+        face.Texture = "rbxassetid://12145599275"
+        wait(0.1)
+        face.Texture = "rbxassetid://12155335619"
+        wait(0.1)
+        face.Texture = "rbxassetid://12145598814"
+        wait(0.1)
+        face.Texture = "rbxassetid://12146135062"
+        wait(0.1)
+        face.Texture = "rbxassetid://11378285585"
+        wait(0.1)
+    end
+else
+end
 end)
 
 addMonsterButton("IndescribableGod", "INDESCRIBABLE GOD", function()
@@ -2977,8 +3836,7 @@ addMonsterButton("Seek", "Seek", function()
         end
         return originalSoundStates
     end
-    
-    -- 恢复Figure音效
+
     local function restoreFigureSounds(originalStates)
         for sound, wasPlaying in pairs(originalStates) do
             if sound and sound:IsA("Sound") and sound.Parent then
@@ -2986,8 +3844,7 @@ addMonsterButton("Seek", "Seek", function()
             end
         end
     end
-    
-    -- 隐藏SeekMovingNewClone
+
     local function hideModelParts(model)
         for _, child in pairs(model:GetDescendants()) do
             if child:IsA("BasePart") or child:IsA("MeshPart") or child:IsA("UnionOperation") then
@@ -3004,20 +3861,17 @@ addMonsterButton("Seek", "Seek", function()
                 child.Transparency = 1
             end
         end
-        print("✅ SeekMovingNewClone已完全隐藏")
     end
-    
-    -- 删除StringCheese
+
     local function deleteAllStringCheese()
         local targetModel = Workspace:FindFirstChild("SeekMovingNewClone")
         if not targetModel then 
-            warn("⚠️ 找不到SeekMovingNewClone")
+
             return 0 
         end
         
         local seekRig = targetModel:FindFirstChild("SeekRig")
         if not seekRig then 
-            warn("⚠️ 找不到SeekRig")
             return 0 
         end
         
@@ -3030,9 +3884,9 @@ addMonsterButton("Seek", "Seek", function()
         end
         
         if deletedCount > 0 then
-            print("🧀 已删除 " .. deletedCount .. " 个StringCheese")
+           
         else
-            print("✅ 未找到StringCheese")
+
         end
         return deletedCount
     end
@@ -3040,16 +3894,14 @@ addMonsterButton("Seek", "Seek", function()
     -- 主程序
     local targetModel = Workspace:FindFirstChild("SeekMovingNewClone")
     if not targetModel then
-        warn("⚠️ 找不到SeekMovingNewClone")
+
     else
         hideModelParts(targetModel)
         deleteAllStringCheese()
     end
-    
-    -- 静音SeekMoving/Figure音效
+
     local originalSoundStates = muteFigureSounds()
-    
-    -- 动画状态变量
+
     local animationPlaying = false
     local isRunning = false
     local isSequencePlaying = false
@@ -3069,9 +3921,7 @@ addMonsterButton("Seek", "Seek", function()
         
             return
         end
-   
-        
-        -- 使用轮询监听动画变化
+
         local lastTracks = {}
         
         while task.wait(0.1) do
@@ -3255,26 +4105,20 @@ for _, partName in ipairs(partsToCopy) do
         end
         
         table.insert(copiedParts, clonedPart)
-        print("✅ 复制完成: " .. partName)
+
     else
-        warn("❌ 未找到部件: " .. partName)
-        
-        -- 列出新模型中可用的部件
-        print("🔍 可用的部件列表:")
         for _, child in ipairs(NewModel:GetChildren()) do
             print("  - " .. child.Name .. " (" .. child.ClassName .. ")")
         end
     end
 end
 
--- 4. 设置原模型的Head为透明
-print("🔧 设置原模型的Head为透明...")
 local originalHead = targetModel:FindFirstChild("Head")
 if originalHead then
     if originalHead:IsA("BasePart") or originalHead:IsA("MeshPart") then
         originalHead.Transparency = 1
         originalHead.CanCollide = false
-        print("✅ 原Head已设为透明")
+
     elseif originalHead:IsA("Model") then
         for _, part in ipairs(originalHead:GetDescendants()) do
             if part:IsA("BasePart") or part:IsA("MeshPart") then
@@ -3282,14 +4126,12 @@ if originalHead then
                 part.CanCollide = false
             end
         end
-        print("✅ 原Head模型及其子部件已设为透明")
+
     end
 else
-    warn("❌ 未找到原模型的Head")
+
 end
 
--- 5. 新模型跟随原模型
-print("🔄 设置新模型跟随原模型...")
 local RunService = game:GetService("RunService")
 local followConnection
 followConnection = RunService.Heartbeat:Connect(function()
@@ -3299,8 +4141,7 @@ followConnection = RunService.Heartbeat:Connect(function()
         end
         return
     end
-    
-    -- 获取主部件
+
     local mainPartTarget = targetModel.PrimaryPart or targetModel:FindFirstChild("HumanoidRootPart") or 
                            targetModel:FindFirstChild("Torso") or targetModel:FindFirstChildWhichIsA("BasePart")
     
@@ -3308,31 +4149,23 @@ followConnection = RunService.Heartbeat:Connect(function()
                        NewModel:FindFirstChild("Torso") or NewModel:FindFirstChildWhichIsA("BasePart")
     
     if mainPartTarget and mainPartNew then
-        -- 精确跟随位置、旋转、方向
+
         mainPartNew.CFrame = mainPartTarget.CFrame
     end
 end)
-print("✅ 跟随已建立")
 
--- 6. 新模型设为透明
-print("🔧 延迟设置新模型为透明...")
 task.wait(1)  -- 等待1秒确认复制完成
-print("🔧 设置新模型为透明...")
+
 for _, part in ipairs(NewModel:GetDescendants()) do
     if part:IsA("BasePart") or part:IsA("MeshPart") or part:IsA("Part") then
         part.Transparency = 1
         part.CanCollide = false
     end
 end
-print("✅ 新模型已设为透明")
 
-warn("✅ 全部操作完成!")
-print("📊 最终状态:")
-print("- 新模型:", NewModel.Name, "(ID:", ModelID, ")", "🔹 透明")
-print("- 已复制部件:", #copiedParts, "个")
 local model = workspace.LiveEntityBramble
 local rightArm = model:FindFirstChild("RightArm", true)
-local darkGrayColor = Color3.fromRGB(36, 36, 36)  -- 深灰色
+local darkGrayColor = Color3.fromRGB(36, 36, 36) 
 
 if rightArm then
     for _, part in ipairs(rightArm:GetDescendants()) do
@@ -3344,7 +4177,7 @@ end
 wait(1)
 local model = workspace.LiveEntityBramble
 local LeftLeg = model:FindFirstChild("LeftLeg", true)
-local darkGrayColor = Color3.fromRGB(36, 36, 36)  -- 深灰色
+local darkGrayColor = Color3.fromRGB(36, 36, 36) 
 
 if LeftLeg then
     for _, part in ipairs(LeftLeg:GetDescendants()) do
@@ -3356,7 +4189,7 @@ end
 wait(1)
 local model = workspace.LiveEntityBramble
 local RightLeg = model:FindFirstChild("RightLeg", true)
-local darkGrayColor = Color3.fromRGB(14, 14, 14)  -- 深灰色
+local darkGrayColor = Color3.fromRGB(14, 14, 14) 
 
 if RightLeg then
     for _, part in ipairs(RightLeg:GetDescendants()) do
@@ -3368,7 +4201,7 @@ end
 wait(0.5)
 local model = workspace.LiveEntityBramble
 local Torso = model:FindFirstChild("Torso", true)
-local darkGrayColor = Color3.fromRGB(14, 14, 14)  -- 深灰色
+local darkGrayColor = Color3.fromRGB(14, 14, 14) 
 
 if Torso then
     for _, part in ipairs(Torso:GetDescendants()) do
@@ -3380,7 +4213,7 @@ end
 wait(0.5)
 local model = workspace.LiveEntityBramble
 local LeftArm = model:FindFirstChild("LeftArm", true)
-local darkGrayColor = Color3.fromRGB(14, 14, 14)  -- 深灰色
+local darkGrayColor = Color3.fromRGB(14, 14, 14) 
 
 if LeftArm then
     for _, part in ipairs(LeftArm:GetDescendants()) do
@@ -3392,17 +4225,11 @@ end
 -- 将 LiveEntityBramble 模型中所有的 PointLight 颜色改为 RGB(160, 0, 0)
 local targetModel = workspace:WaitForChild("LiveEntityBramble", 5)
 if not targetModel then
-    warn("❌ 未找到目标模型: LiveEntityBramble")
     return
 end
-print("✅ 找到目标模型:", targetModel.Name)
 
--- 目标颜色: RGB(160, 0, 0) 深红色
 local targetColor = Color3.fromRGB(160, 0, 0)
-print("🎨 目标颜色: RGB(160, 0, 0) - 深红色")
 
--- 查找并修改所有 PointLight
-print("🔍 搜索模型中所有 PointLight...")
 local pointLights = {}
 local changedLights = 0
 
@@ -3419,10 +4246,7 @@ for _, light in ipairs(targetModel:GetDescendants()) do
 end
 
 if #pointLights == 0 then
-    warn("❌ 未找到任何 PointLight")
-    
-    -- 列出可用的灯光类型
-    print("🔍 模型中的灯光类型:")
+
     local lightTypes = {}
     for _, child in ipairs(targetModel:GetDescendants()) do
         if child:IsA("Light") then
@@ -3436,13 +4260,9 @@ if #pointLights == 0 then
     return
 end
 
-print("✅ 找到 " .. #pointLights .. " 个 PointLight")
-
--- 修改所有 PointLight
 for _, data in ipairs(pointLights) do
     local light = data.instance
-    
-    -- 修改颜色
+
     light.Color = targetColor
     
     -- 调整其他属性
@@ -3460,25 +4280,10 @@ for _, data in ipairs(pointLights) do
     local oldG = math.floor(data.originalColor.G * 255)
     local oldB = math.floor(data.originalColor.B * 255)
     
-    print("✅ 已修改 PointLight: " .. light.Name)
-    print("   ├─ 路径: " .. light:GetFullName())
-    print("   ├─ 原颜色: RGB(" .. oldR .. ", " .. oldG .. ", " .. oldB .. ")")
-    print("   ├─ 新颜色: RGB(" .. newR .. ", " .. newG .. ", " .. newB .. ")")
-    print("   ├─ 亮度: " .. data.originalBrightness .. " → " .. light.Brightness)
-    print("   └─ 范围: " .. data.originalRange .. " → " .. light.Range)
 end
 
-warn("✅ 颜色修改完成!")
-print("📊 修改统计:")
-print("- 目标模型:", targetModel.Name)
-print("- 已修改 PointLight:", changedLights, "个")
-print("- 目标颜色: RGB(160, 0, 0)")
-print("- 亮度设置: 5")
-print("- 范围设置: 10")
+task.wait(0.5)
 
--- 颜色验证
-task.wait(0.5)  -- 等待一下确保颜色已应用
-print("\n🔍 颜色验证:")
 local correctCount = 0
 local incorrectCount = 0
 
@@ -3489,27 +4294,18 @@ for _, data in ipairs(pointLights) do
     local b = math.floor(light.Color.B * 255)
     
     if r == 160 and g == 0 and b == 0 then
-        print("  ✅ " .. light.Name .. ": RGB(" .. r .. ", " .. g .. ", " .. b .. ") - 正确")
         correctCount = correctCount + 1
     else
-        print("  ⚠️ " .. light.Name .. ": RGB(" .. r .. ", " .. g .. ", " .. b .. ") - 不匹配")
         incorrectCount = incorrectCount + 1
     end
 end
-
--- 修改特定路径的 ParticleEmitter 为纯红色
 local targetModel = workspace:WaitForChild("LiveEntityBramble", 5)
 if not targetModel then
-    warn("❌ 未找到目标模型: LiveEntityBramble")
+
     return
 end
-print("✅ 找到目标模型:", targetModel.Name)
-
--- 目标颜色: RGB(255, 0, 0) 纯红色
 local targetColor = Color3.fromRGB(255, 0, 0)
-print("🎨 目标颜色: RGB(255, 0, 0) - 纯红色")
 
--- 定义要修改的粒子路径
 local particlePaths = {
     "Head.LanternNeon.Attachment.CenterAttach.CenterAttach",
     "Head.UpperHead.Glass.FliesParticles"
@@ -3517,44 +4313,35 @@ local particlePaths = {
 
 local changedParticles = 0
 
--- 遍历每个路径
 for _, path in ipairs(particlePaths) do
-    print("\n🔍 查找路径:", path)
-    
-    -- 分割路径
+
     local parts = {}
     for part in path:gmatch("([^.]+)") do
         table.insert(parts, part)
     end
-    
-    -- 从目标模型开始查找
+
     local current = targetModel
     local found = true
     
     for i, partName in ipairs(parts) do
         current = current:FindFirstChild(partName)
         if not current then
-            print("❌ 路径中断:", partName, "(在位置", i, ")")
+   
             found = false
             break
         end
     end
     
     if found and current:IsA("ParticleEmitter") then
-        print("✅ 找到 ParticleEmitter:", current.Name)
-        print("📍 完整路径:", current:GetFullName())
-        
-        -- 保存原颜色
+
         local originalColor = nil
         if current.Color and current.Color.Keypoints and #current.Color.Keypoints > 0 then
             originalColor = current.Color.Keypoints[1].Value
         end
-        
-        -- 修改为纯红色
+
         local redColorSequence = ColorSequence.new(targetColor)
         current.Color = redColorSequence
-        
-        -- 修改其他粒子属性以增强效果
+
         current.Lifetime = NumberRange.new(1, 2)
         current.Rate = 50
         current.Speed = NumberRange.new(5, 10)
@@ -3565,8 +4352,7 @@ for _, path in ipairs(particlePaths) do
             NumberSequenceKeypoint.new(0.5, 0.3),
             NumberSequenceKeypoint.new(1, 0)
         })
-        
-        -- 设置透明度
+
         current.Transparency = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 0.2),
             NumberSequenceKeypoint.new(0.5, 0.1),
@@ -3574,28 +4360,18 @@ for _, path in ipairs(particlePaths) do
         })
         
         changedParticles = changedParticles + 1
-        
-        -- 显示修改信息
+
         if originalColor then
             local oldR = math.floor(originalColor.R * 255)
             local oldG = math.floor(originalColor.G * 255)
             local oldB = math.floor(originalColor.B * 255)
-            print("   ├─ 原颜色: RGB(" .. oldR .. ", " .. oldG .. ", " .. oldB .. ")")
         end
-        print("   ├─ 新颜色: RGB(255, 0, 0)")
-        print("   ├─ 生命周期: 1-2 秒")
-        print("   ├─ 发射率: 50")
-        print("   └─ 速度: 5-10")
         
     elseif found then
-        print("❌ 找到对象但不是 ParticleEmitter:", current.ClassName)
-        
-        -- 如果是其他对象，查找其子对象中的 ParticleEmitter
+
         for _, particle in ipairs(current:GetDescendants()) do
             if particle:IsA("ParticleEmitter") then
-                print("✅ 找到子 ParticleEmitter:", particle.Name)
-                
-                -- 修改颜色
+
                 particle.Color = ColorSequence.new(targetColor)
                 particle.Rate = 50
                 
@@ -3704,13 +4480,8 @@ Event:FireServer(
         ["Light Color"] = Color3.new(1, 0.90844488143921, 0)
     }
 )
-
 wait(1)
-
 local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-
----====== Create entity ======---
-
 local entity = spawner.Create({
 	Entity = {
 		Name = "LightSpeed",
@@ -3778,8 +4549,6 @@ entity:SetCallback("OnRebounding", function(startOfRebound)
 		switchBack = main:WaitForChild("SwitchBack")
 	}
 
-	-- Toggle particle emitters and lights within the entityModel
-	-- To switch between green & red state
 	for _, c in attachment:GetChildren() do
 		c.Enabled = (not startOfRebound)
 	end
@@ -3787,7 +4556,6 @@ entity:SetCallback("OnRebounding", function(startOfRebound)
 		c.Enabled = startOfRebound
 	end
 
-	-- Play sounds
 	if startOfRebound == true then
 		sounds.footsteps.PlaybackSpeed = 0.35
 		sounds.playSound.PlaybackSpeed = 0.25
@@ -3805,8 +4573,8 @@ end)
 entity:Run()
 end)
 
-addMonsterButton("AM60", "AminA60", function()
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+addMonsterButton("AminA60", "AminA60", function()
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local entity = spawner.Create({
 	Entity = {
 		Name = "Amin-60",
@@ -3896,11 +4664,8 @@ end)
 entity:Run()
 end)
 
-addMonsterButton("BLA60", "BlackA60", function()
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-
----====== Create entity ======---
-
+addMonsterButton("BlackA60", "BlackA60", function()
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local entity = spawner.Create({
 	Entity = {
 		Name = "Black-A60",
@@ -3948,13 +4713,10 @@ local entity = spawner.Create({
 	},
 	Death = {
 		Type = "Guiding",
-		Hints = {"你死于A60", "极大的嘈杂声会掩盖其他声音", "在不妥时使用十字架会更方便", "反复进柜子躲避它"},
+		Hints = {"你死于BlackA60", "极大的嘈杂声会掩盖其他声音", "在不妥时使用十字架会更方便", "反复进柜子躲避它"},
 		Cause = ""
 	}
 })
-
----====== Debug entity ======---
-
 entity:SetCallback("OnRebounding", function(startOfRebound)
 	-- Variables for the entity
 	local entityModel = entity.Model
@@ -3989,6 +4751,7 @@ entity:SetCallback("OnRebounding", function(startOfRebound)
 	end
 	
 end)
+entity:Run()
 end)
 
 addMonsterButton("Silence", "Silence", function()
@@ -4356,8 +5119,6 @@ local entity = spawner.Create({
 	}
 })
 
----====== Debug entity ======---
-
 entity:SetCallback("OnRebounding", function(startOfRebound)
 	-- Variables for the entity
 	local entityModel = entity.Model
@@ -4396,6 +5157,661 @@ end)
 ---====== Run entity ======---
 
 entity:Run()
+end)
+
+addMonsterButton("ForEyes", "ForEyes", function()
+    local Event = game:GetService("ReplicatedStorage").RemotesFolder.AdminPanelRunCommand
+Event:FireServer(
+    "Spawn Custom Entity",
+    {
+        ["Fog Image ID"] = "9740942195",
+        ["Face Image ID"] = "18439330275",
+        ["Fog Color"] = Color3.new(0, 0, 0),
+        Rebounds = 5,
+        ["Far Sound"] = {
+            Pitch = 1,
+            AudioId = "1838706588",
+            Speed = 1
+        },
+        ["Light Color"] = Color3.new(0, 0, 0),
+        Speed = 50,
+        ["Close Sound"] = {
+            Pitch = 1,
+            AudioId = "129232864337188",
+            Speed = 1
+        },
+        Delay = 0,
+        Damage = 0
+    }
+)
+end)
+
+addMonsterButton("ShoopDaWhoop", "ShoopDaWhoop", function()
+local Event = game:GetService("ReplicatedStorage").RemotesFolder.AdminPanelRunCommand
+Event:FireServer("Groundskeeper", {})
+
+task.wait(2)
+
+local RunService = game:GetService("RunService")
+local modelId = 86112457302745
+local loadedModel
+
+local success, result = pcall(function()
+    return game:GetObjects("rbxassetid://" .. modelId)[1]
+end)
+
+if success and result and result:IsA("Model") then
+    loadedModel = result
+    loadedModel.Parent = workspace
+    loadedModel.Name = "Following_ENEMY"
+else
+    return
+end
+
+if not loadedModel.PrimaryPart then
+    local rootPart = loadedModel:FindFirstChild("HumanoidRootPart") or loadedModel:FindFirstChildWhichIsA("BasePart")
+    if rootPart then
+        loadedModel.PrimaryPart = rootPart
+    else
+        return
+    end
+end
+
+local function findGroundskeeper()
+    local currentRooms = workspace:FindFirstChild("CurrentRooms")
+    if not currentRooms then return nil end
+
+    for _, room in ipairs(currentRooms:GetChildren()) do
+        if room:IsA("Model") or room:IsA("Folder") then
+            local target = room:FindFirstChild("Groundskeeper", true)
+            if target and target:IsA("Model") then
+                return target
+            end
+        end
+    end
+    return nil
+end
+
+local targetModel = findGroundskeeper()
+if not targetModel then
+    return
+end
+
+if not targetModel.PrimaryPart then
+    local rootPart = targetModel:FindFirstChild("HumanoidRootPart") or targetModel:FindFirstChildWhichIsA("BasePart")
+    if rootPart then
+        targetModel.PrimaryPart = rootPart
+    else
+        return
+    end
+end
+
+local function processHideModel(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+            descendant.Transparency = 1
+            if descendant:IsA("MeshPart") then
+                descendant.RenderFidelity = Enum.RenderFidelity.Performance
+            end
+        end
+        if descendant:IsA("Decal") or descendant:IsA("Texture") then
+            descendant.Transparency = 1
+        end
+        if descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+            descendant.Enabled = false
+        end
+        if descendant:IsA("PointLight") or descendant:IsA("SpotLight") or descendant:IsA("SurfaceLight") then
+            descendant:Destroy()
+        end
+        if descendant:IsA("ParticleEmitter") then
+            descendant.Enabled = false
+        end
+        if descendant:IsA("Fire") or descendant:IsA("Smoke") then
+            descendant.Enabled = false
+        end
+    end
+end
+
+local function hideGroundskeeper()
+    local foundAny = false
+    local function searchAndHide(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if child.Name == "Groundskeeper" and child:IsA("Model") then
+                processHideModel(child)
+                foundAny = true
+            end
+            searchAndHide(child)
+        end
+    end
+    searchAndHide(workspace)
+    return foundAny
+end
+
+hideGroundskeeper()
+
+local function setupHideMonitor()
+    local connections = {}
+    local function monitorChildAdded(parent)
+        local connection = parent.ChildAdded:Connect(function(child)
+            if child.Name == "Groundskeeper" and child:IsA("Model") then
+                task.wait(0.1)
+                processHideModel(child)
+            end
+            monitorChildAdded(child)
+        end)
+        table.insert(connections, connection)
+    end
+    monitorChildAdded(workspace)
+    return function()
+        for _, conn in ipairs(connections) do
+            conn:Disconnect()
+        end
+    end
+end
+
+local hideMonitor = setupHideMonitor()
+
+local function processDeleteSounds(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("Sound") then
+            descendant:Destroy()
+        end
+    end
+end
+
+local function setupSoundDeletionMonitor()
+    local connections = {}
+    local function monitorDescendantAdded(parent)
+        local connection = parent.DescendantAdded:Connect(function(descendant)
+            if descendant:IsA("Sound") then
+                local current = descendant
+                while current and current ~= game do
+                    if current.Name == "Groundskeeper" and current:IsA("Model") then
+                        descendant:Destroy()
+                        break
+                    end
+                    current = current.Parent
+                end
+            end
+        end)
+        table.insert(connections, connection)
+    end
+    monitorDescendantAdded(workspace)
+    
+    local groundskeeperConnection
+    groundskeeperConnection = workspace.DescendantAdded:Connect(function(descendant)
+        if descendant.Name == "Groundskeeper" and descendant:IsA("Model") then
+            task.wait(0.1)
+            processDeleteSounds(descendant)
+        end
+    end)
+    table.insert(connections, groundskeeperConnection)
+    
+    return function()
+        for _, conn in ipairs(connections) do
+            conn:Disconnect()
+        end
+    end
+end
+
+local soundMonitor = setupSoundDeletionMonitor()
+
+local followConnection
+followConnection = RunService.Heartbeat:Connect(function()
+    if not targetModel or not targetModel.PrimaryPart or not loadedModel or not loadedModel.PrimaryPart or 
+       not targetModel.PrimaryPart.Parent or not loadedModel.Parent then
+        if followConnection then
+            followConnection:Disconnect()
+        end
+        return
+    end
+    local targetCFrame = targetModel.PrimaryPart.CFrame
+    loadedModel:PivotTo(targetCFrame)
+end)
+
+local function playLaserEffect()
+    local RunService = game:GetService("RunService")
+    local Workspace = game:GetService("Workspace")
+    local Players = game:GetService("Players")
+    
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://138148333"
+    sound.Name = "WHOOP"
+    sound.Parent = workspace
+    sound:Play()
+    
+    local targetModel = workspace:FindFirstChild("Following_ENEMY")
+    if not targetModel then 
+        if sound and sound.Parent then sound:Destroy() end
+        return false 
+    end
+    
+    local currentRooms = Workspace:FindFirstChild("CurrentRooms")
+    local groundskeeperModel
+    if currentRooms then
+        for _, room in ipairs(currentRooms:GetChildren()) do
+            if room:IsA("Folder") or room:IsA("Model") then
+                local groundskeeper = room:FindFirstChild("Groundskeeper")
+                if groundskeeper and groundskeeper:IsA("Model") then
+                    groundskeeperModel = groundskeeper
+                    break
+                end
+            end
+        end
+    end
+    if not groundskeeperModel then 
+        if sound and sound.Parent then sound:Destroy() end
+        return false 
+    end
+    
+    if not groundskeeperModel.PrimaryPart then
+        local rootPart = groundskeeperModel:FindFirstChild("HumanoidRootPart") or groundskeeperModel:FindFirstChildWhichIsA("BasePart")
+        if rootPart then 
+            groundskeeperModel.PrimaryPart = rootPart 
+        else 
+            if sound and sound.Parent then sound:Destroy() end
+            return false
+        end
+    end
+    
+    task.wait(1.8)
+    
+    local laser1Id = 75823189898619
+    local laser1Model
+    local laser1Success, laser1Result = pcall(function()
+        return game:GetObjects("rbxassetid://" .. laser1Id)[1]
+    end)
+    
+    if laser1Success and laser1Result and laser1Result:IsA("Model") then
+        laser1Model = laser1Result
+        laser1Model.Name = "Laser1"
+        laser1Model.Parent = workspace
+        if not laser1Model.PrimaryPart then
+            local rootPart = laser1Model:FindFirstChild("HumanoidRootPart") or laser1Model:FindFirstChildWhichIsA("BasePart")
+            if rootPart then laser1Model.PrimaryPart = rootPart end
+        end
+    else
+        if sound and sound.Parent then sound:Destroy() end
+        return false
+    end
+    
+    local function hideModel(model)
+        for _, descendant in ipairs(model:GetDescendants()) do
+            if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+                descendant.Transparency = 1
+            elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                descendant.Transparency = 1
+            elseif descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+                descendant.Enabled = false
+            end
+        end
+    end
+    
+    local function restoreModelExceptRootPart(model)
+        for _, descendant in ipairs(model:GetDescendants()) do
+            if descendant.Name ~= "HumanoidRootPart" then
+                if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+                    descendant.Transparency = 0
+                elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                    descendant.Transparency = 0
+                elseif descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+                    descendant.Enabled = true
+                end
+            end
+        end
+    end
+    
+    local laser1FollowConnection
+    if groundskeeperModel and groundskeeperModel.PrimaryPart and laser1Model and laser1Model.PrimaryPart then
+        laser1Model:PivotTo(groundskeeperModel.PrimaryPart.CFrame)
+        hideModel(targetModel)
+        laser1FollowConnection = RunService.Heartbeat:Connect(function()
+            if not groundskeeperModel or not groundskeeperModel.PrimaryPart or not laser1Model or not laser1Model.PrimaryPart or 
+               not groundskeeperModel.PrimaryPart.Parent or not laser1Model.Parent then
+                if laser1FollowConnection then 
+                    laser1FollowConnection:Disconnect() 
+                end
+                return
+            end
+            laser1Model:PivotTo(groundskeeperModel.PrimaryPart.CFrame)
+        end)
+    else
+        if laser1Model and laser1Model.Parent then laser1Model:Destroy() end
+        if sound and sound.Parent then sound:Destroy() end
+        return false
+    end
+    
+    task.wait(1.3)
+    
+    local laser2Id = 74088823220607
+    local laser2Model
+    local laser2Success, laser2Result = pcall(function()
+        return game:GetObjects("rbxassetid://" .. laser2Id)[1]
+    end)
+    
+    if laser2Success and laser2Result and laser2Result:IsA("Model") then
+        laser2Model = laser2Result
+        laser2Model.Name = "Laser2"
+        laser2Model.Parent = workspace
+        
+        if not laser2Model.PrimaryPart then
+            local rootPart = laser2Model:FindFirstChild("HumanoidRootPart") or laser2Model:FindFirstChildWhichIsA("BasePart")
+            if rootPart then laser2Model.PrimaryPart = rootPart end
+        end
+        
+        local player = Players.LocalPlayer
+        if player then
+            local camera = workspace.CurrentCamera
+            if camera then
+                local SHAKE_INTENSITY = 2
+                local SHAKE_DURATION = 10
+                local SHAKE_SPEED = 70
+                local startTime = tick()
+                local connection
+                
+                connection = RunService.RenderStepped:Connect(function()
+                    local elapsed = tick() - startTime
+                    if elapsed < SHAKE_DURATION then
+                        local decay = 1 - (elapsed / SHAKE_DURATION)
+                        local intensity = SHAKE_INTENSITY * decay
+                        local time = elapsed * SHAKE_SPEED
+                        local offset = Vector3.new(
+                            math.sin(time * 1.1) * intensity * 0.5 + math.random(-intensity, intensity) * 0.3,
+                            math.cos(time * 0.9) * intensity * 0.5 + math.random(-intensity, intensity) * 0.3,
+                            math.sin(time * 1.0) * intensity * 0.3
+                        )
+                        local lookVector = camera.CFrame.LookVector
+                        local currentPos = camera.CFrame.Position
+                        local newPos = currentPos + offset
+                        camera.CFrame = CFrame.new(newPos, newPos + lookVector) * CFrame.Angles(0, 0, 0)
+                    else
+                        if connection then connection:Disconnect() end
+                    end
+                end)
+            end
+        end
+    else
+        if laser1FollowConnection then laser1FollowConnection:Disconnect() end
+        if laser1Model and laser1Model.Parent then laser1Model:Destroy() end
+        if sound and sound.Parent then sound:Destroy() end
+        return false
+    end
+    
+    local laser2FollowConnection
+    if groundskeeperModel and groundskeeperModel.PrimaryPart and laser2Model and laser2Model.PrimaryPart then
+        laser2Model:PivotTo(groundskeeperModel.PrimaryPart.CFrame)
+        hideModel(laser1Model)
+        laser2FollowConnection = RunService.Heartbeat:Connect(function()
+            if not groundskeeperModel or not groundskeeperModel.PrimaryPart or not laser2Model or not laser2Model.PrimaryPart or 
+               not groundskeeperModel.PrimaryPart.Parent or not laser2Model.Parent then
+                if laser2FollowConnection then 
+                    laser2FollowConnection:Disconnect() 
+                end
+                return
+            end
+            laser2Model:PivotTo(groundskeeperModel.PrimaryPart.CFrame)
+        end)
+    else
+        if laser1FollowConnection then laser1FollowConnection:Disconnect() end
+        if laser2FollowConnection then laser2FollowConnection:Disconnect() end
+        if laser1Model and laser1Model.Parent then laser1Model:Destroy() end
+        if laser2Model and laser2Model.Parent then laser2Model:Destroy() end
+        if sound and sound.Parent then sound:Destroy() end
+        return false
+    end
+    
+    local soundFinished = false
+    local soundConnection
+    soundConnection = sound.Ended:Connect(function()
+        soundFinished = true
+        if soundConnection then soundConnection:Disconnect() end
+    end)
+    
+    while not soundFinished do 
+        task.wait(0.1) 
+    end
+    
+    if targetModel then 
+        restoreModelExceptRootPart(targetModel) 
+    end
+    
+    if laser1FollowConnection then laser1FollowConnection:Disconnect() end
+    if laser2FollowConnection then laser2FollowConnection:Disconnect() end
+    
+    if laser1Model and laser1Model.Parent then laser1Model:Destroy() end
+    if laser2Model and laser2Model.Parent then laser2Model:Destroy() end
+    if sound and sound.Parent then sound:Destroy() end
+    
+    return true
+end
+
+local function scheduleLaserEffects()
+    local endTime = tick() + 5 * 60
+    local count = 0
+    
+    while tick() < endTime do
+        count = count + 1
+        
+        playLaserEffect()
+        
+        local waitTime = math.random(12, 50)
+        
+        if tick() + waitTime > endTime then
+            local remainingTime = endTime - tick()
+            if remainingTime > 0 then
+                task.wait(remainingTime)
+            end
+            break
+        else
+            task.wait(waitTime)
+        end
+    end
+    
+    if followConnection then
+        followConnection:Disconnect()
+    end
+    if hideMonitor then
+        hideMonitor()
+    end
+    if soundMonitor then
+        soundMonitor()
+    end
+    if loadedModel and loadedModel.Parent then
+        loadedModel:Destroy()
+    end
+end
+
+task.spawn(scheduleLaserEffects)
+end)
+
+addMonsterButton("A200", "A200", function()
+   local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local entity = spawner.Create({
+	Entity = {
+		Name = "A-200",
+		Asset = "103526452499813",
+		HeightOffset = 1
+	},
+	Lights = {
+		Flicker = {
+			Enabled = false,
+			Duration = 10
+		},
+		Shatter = false,
+		Repair = false
+	},
+	Earthquake = {
+		Enabled = false
+	},
+	CameraShake = {
+		Enabled = true,
+		Range = 200,
+		Values = {1.5, 20, 0.1, 1}
+	},
+	Movement = {
+		Speed = 60,
+		Delay = 5,
+		Reversed = true
+	},
+	Rebounding = {
+		Enabled = false,
+		Type = "ambush",
+		Min = 4,
+		Max = 4,
+		Delay = math.random(10, 30) / 10
+	},
+	Damage = {
+		Enabled = true,
+		Range = 100,
+		Amount = 1
+	},
+	Crucifixion = {
+		Enabled = true,
+		Range = 100,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding",
+		Hints = {"你死于A-200", "竖起耳朵仔细辨别是一个麻烦", "但你不得不这么做", "你或许会在寂静那学到点什么"},
+		Cause = ""
+	}
+})
+entity:SetCallback("OnRebounding", function(startOfRebound)
+	local entityModel = entity.Model
+	local main = entityModel:WaitForChild("Main")
+	local attachment = main:WaitForChild("Attachment")
+	local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
+	local sounds = {
+		footsteps = main:WaitForChild("Footsteps"),
+		playSound = main:WaitForChild("PlaySound"),
+		switch = main:WaitForChild("Switch"),
+		switchBack = main:WaitForChild("SwitchBack")
+	}
+
+	for _, c in attachment:GetChildren() do
+		c.Enabled = (not startOfRebound)
+	end
+	for _, c in AttachmentSwitch:GetChildren() do
+		c.Enabled = startOfRebound
+	end
+
+	if startOfRebound == true then
+		sounds.footsteps.PlaybackSpeed = 0.35
+		sounds.playSound.PlaybackSpeed = 0.25
+		sounds.switch:Play()
+	else
+		sounds.footsteps.PlaybackSpeed = 0.25
+		sounds.playSound.PlaybackSpeed = 0.16
+		sounds.switchBack:Play()
+	end
+	
+end)
+
+entity:Run()
+
+local sound = Instance.new("Sound")
+sound.Name = "A200"  
+sound.SoundId = "rbxassetid://2306939610"
+sound.Volume = 0.1
+sound.Looped = true
+sound.Parent = workspace
+sound:Play()
+
+task.wait(10)
+sound:Stop()
+sound:Destroy()
+
+end)
+
+addMonsterButton("Chainsmoker", "Chainsmoker", function()
+    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local entity = spawner.Create({
+	Entity = {
+		Name = "Chainsmoker",
+		Asset = "121250781195971",
+		HeightOffset = 1
+	},
+	Lights = {
+		Flicker = {
+			Enabled = true,
+			Duration = 1
+		},
+		Shatter = true,
+		Repair = false
+	},
+	Earthquake = {
+		Enabled = false
+	},
+	CameraShake = {
+		Enabled = true,
+		Range = 10,
+		Values = {1.5, 20, 0.1, 1}
+	},
+	Movement = {
+		Speed = 30,
+		Delay = 1,
+		Reversed = false
+	},
+	Rebounding = {
+		Enabled = false,
+		Type = "ambush",
+		Min = 4,
+		Max = 4,
+		Delay = math.random(10, 30) / 10
+	},
+	Damage = {
+		Enabled = true,
+		Range = 100,
+		Amount = 125
+	},
+	Crucifixion = {
+		Enabled = true,
+		Range = 10,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding",
+		Hints = {"你死于Chainsmoker", "......", "或许我不能告诉你他的信息", "总而言之，当心闪灯"},
+		Cause = ""
+	}
+})
+entity:SetCallback("OnRebounding", function(startOfRebound)
+	-- Variables for the entity
+	local entityModel = entity.Model
+	local main = entityModel:WaitForChild("Main")
+	local attachment = main:WaitForChild("Attachment")
+	local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
+	local sounds = {
+		footsteps = main:WaitForChild("Footsteps"),
+		playSound = main:WaitForChild("PlaySound"),
+		switch = main:WaitForChild("Switch"),
+		switchBack = main:WaitForChild("SwitchBack")
+	}
+
+	for _, c in attachment:GetChildren() do
+		c.Enabled = (not startOfRebound)
+	end
+	for _, c in AttachmentSwitch:GetChildren() do
+		c.Enabled = startOfRebound
+	end
+
+	-- Play sounds
+	if startOfRebound == true then
+		sounds.footsteps.PlaybackSpeed = 0.35
+		sounds.playSound.PlaybackSpeed = 0.25
+		sounds.switch:Play()
+	else
+		sounds.footsteps.PlaybackSpeed = 0.25
+		sounds.playSound.PlaybackSpeed = 0.16
+		sounds.switchBack:Play()
+	end
+	
+end)
+
+entity:Run()
+
 end)
 
 local function addItemButton(name, text, onClick)
@@ -4478,6 +5894,7 @@ addItemButton("CandyBag", "CANDY BAG", function()
         {
             Players = {
                 A_Yun66 = "A_Yun66",
+                sppvve = "sppvve",
                 Nssys123 = "Nssys123",
                 YMXeternalX = "YMXeternalX",
                 goat_qiu = "goat_qiu",
@@ -4503,6 +5920,7 @@ addItemButton("Lotus", "LOTUS", function()
         {
             Players = {
                 A_Yun66 = "A_Yun66",
+                sppvve = "sppvve",
                 Nssys123 = "Nssys123",
                 YMXeternalX = "YMXeternalX",
                 goat_qiu = "goat_qiu",
@@ -4529,6 +5947,7 @@ addItemButton("LotusPetal", "LOTUS PETAL", function()
             Players = {
                 A_Yun66 = "A_Yun66",
                 Nssys123 = "Nssys123",
+                sppvve = "sppvve",
                 YMXeternalX = "YMXeternalX",
                 goat_qiu = "goat_qiu",
                 SOXIYU24 = "SOXIYU24",
