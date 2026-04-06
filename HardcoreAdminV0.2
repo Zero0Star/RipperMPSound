@@ -733,14 +733,14 @@ function LoadCustomInstance(source, parent)
     return model
 end
 
-local s = LoadCustomInstance(134842553013881, workspace)
+local s = LoadCustomInstance(115317486253045, workspace)
 if not s then
     warn("Failed to load Frost entity.")
     return
 end
 
 local entity = s:FindFirstChildWhichIsA("BasePart")
-entity.CFrame = GetRoom():WaitForChild("RoomEntrance").CFrame * CFrame.new(0, 5, -15)
+entity.CFrame = GetRoom():WaitForChild("RoomEntrance").CFrame * CFrame.new(0, 100, -15)
 entity.Part.CFrame = entity.CFrame
 
 pcall(function()
