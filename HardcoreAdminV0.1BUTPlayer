@@ -677,14 +677,14 @@ Event:FireServer(
         Rebounds = 0,
         ["Far Sound"] = {
             Pitch = 1,
-            AudioId = "7298463798",
+            AudioId = "140736591220630",
             Speed = 0
         },
         ["Light Color"] = Color3.new(0, 0, 0),
         Speed = 0,
         ["Close Sound"] = {
             Pitch = 1,
-            AudioId = "7298463798",
+            AudioId = "140736591220630",
             Speed = 0
         },
         Delay = 0,
