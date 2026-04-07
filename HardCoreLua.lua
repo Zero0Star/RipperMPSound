@@ -984,7 +984,7 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
-    local Workspace = game:GetService("Workspace")
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local waypointFolder = Workspace:FindFirstChild("A60_Waypoints")
@@ -1001,76 +1001,70 @@ end
 local allWaypoints = {}
 local figureNodes = {}
 
--- 查找所有名为"1"的Part
-local function findAllOneParts(parent)
-    for _, child in ipairs(parent:GetChildren()) do
-        if child.Name == "1" and child:IsA("BasePart") then
-            table.insert(figureNodes, {
-                part = child,
-                position = child.Position
-            })
-        end
-        -- 递归查找子对象
-        if #child:GetChildren() > 0 then
-            findAllOneParts(child)
-        end
-    end
-end
-
--- 从CurrentRooms开始查找
+-- 查找名为"50"的房间
 local currentRooms = Workspace:FindFirstChild("CurrentRooms")
 if currentRooms then
-    findAllOneParts(currentRooms)
-end
-
--- 如果没找到，再从Workspace根目录查找
-if #figureNodes == 0 then
-    findAllOneParts(Workspace)
-end
-
-if #figureNodes > 0 then
-    print("找到 " .. #figureNodes .. " 个名为'1'的Part")
-    
-    for _, node in ipairs(figureNodes) do
-        print("  - 位置: " .. tostring(node.position))
-    end
-    
-    for _, node in ipairs(figureNodes) do
-        for _ = 1, 2 do
-            table.insert(allWaypoints, {
-                part = node.part,
-                position = node.position,
-                isOnePart = true
-            })
+    local room50 = currentRooms:FindFirstChild("50")
+    if room50 and room50:IsA("Model") then
+        print("找到房间50")
+        
+        local figureSetup = room50:FindFirstChild("FigureSetup")
+        if figureSetup then
+            print("找到FigureSetup")
+            
+            local figureNodesFolder = figureSetup:FindFirstChild("FigureNodes")
+            if figureNodesFolder then
+                print("找到FigureNodes")
+                
+                local node1 = figureNodesFolder:FindFirstChild("1")
+                if node1 and node1:IsA("BasePart") then
+                    print("找到FigureNodes/1，创建路径点")
+                    
+                    table.insert(figureNodes, {
+                        part = node1,
+                        position = node1.Position
+                    })
+                    
+                    for _ = 1, 2 do
+                        table.insert(allWaypoints, {
+                            part = node1,
+                            position = node1.Position,
+                            isOnePart = true
+                        })
+                    end
+                    
+                    for _ = 1, 3 do
+                        table.insert(allWaypoints, {
+                            part = node1,
+                            position = node1.Position + Vector3.new(
+                                math.random(-3, 3),
+                                math.random(-0.5, 0.5),
+                                math.random(-3, 3)
+                            ),
+                            isOnePart = true,
+                            isOffset = true
+                        })
+                    end
+                    
+                    for _ = 1, math.random(3, 6) do
+                        for i = #allWaypoints, 2, -1 do
+                            local j = math.random(i)
+                            allWaypoints[i], allWaypoints[j] = allWaypoints[j], allWaypoints[i]
+                        end
+                    end
+                else
+                    print("FigureNodes/1 不是BasePart或不存在")
+                end
+            else
+                print("找不到FigureNodes")
+            end
+        else
+            print("找不到FigureSetup")
         end
-    end
-    
-    for _ = 1, 3 do
-        for _, node in ipairs(figureNodes) do
-            table.insert(allWaypoints, {
-                part = node.part,
-                position = node.position + Vector3.new(
-                    math.random(-3, 3),
-                    math.random(-0.5, 0.5),
-                    math.random(-3, 3)
-                ),
-                isOnePart = true,
-                isOffset = true
-            })
-        end
-    end
-    
-    for _ = 1, math.random(3, 6) do
-        for i = #allWaypoints, 2, -1 do
-            local j = math.random(i)
-            allWaypoints[i], allWaypoints[j] = allWaypoints[j], allWaypoints[i]
-        end
-    end
-else
-
-    
-    local currentRooms = Workspace:FindFirstChild("CurrentRooms")
-    if currentRooms then
+    else
+        print("找不到房间50")
+        
+        -- 没有房间50时，创建普通路径点
         local waypointCount = 0
         
         local function processDoor(doorModel, roomName, doorType)
@@ -1165,6 +1159,13 @@ else
             end
         end
     end
+else
+    print("找不到CurrentRooms")
+end
+
+if #allWaypoints == 0 then
+    print("没有创建任何路径点")
+    return
 end
 
 local a60Model
@@ -1199,7 +1200,7 @@ else
 end
 
 local function addFaceParticleAnimation()
-
+    -- 查找名为"Face"的ParticleEmitter
     local faceParticle
     for _, child in ipairs(a60Model:GetDescendants()) do
         if child:IsA("ParticleEmitter") and child.Name == "Face" then
@@ -1209,10 +1210,13 @@ local function addFaceParticleAnimation()
     end
     
     if not faceParticle then
-
+        print("警告：未找到名为'Face'的ParticleEmitter")
         return
     end
-
+    
+    print("找到面部粒子发射器")
+    
+    -- 粒子纹理ID列表
     local particleTextures = {
         "rbxassetid://16020415559",
         "rbxassetid://16020423090", 
@@ -1226,50 +1230,57 @@ local function addFaceParticleAnimation()
     local currentTextureIndex = 1
     local animationSpeed = 0.1
     local isAnimating = true
-
+    
+    -- 保存原始粒子设置
     local originalTexture = faceParticle.Texture
     local originalEnabled = faceParticle.Enabled
-
+    
+    -- 面部粒子动画循环
     coroutine.wrap(function()
         while a60Model and a60Model.Parent and faceParticle and faceParticle.Parent and isAnimating do
-
+            -- 确保粒子发射器是启用的
             faceParticle.Enabled = true
-
+            
+            -- 应用当前纹理
             faceParticle.Texture = particleTextures[currentTextureIndex]
-
+            
+            -- 更新到下一个纹理
             currentTextureIndex = currentTextureIndex + 1
             if currentTextureIndex > #particleTextures then
                 currentTextureIndex = 1
             end
-
+            
+            -- 随机速度变化
             local currentSpeed = animationSpeed * (0.8 + math.random() * 0.4)
             wait(currentSpeed)
         end
     end)()
-
+    
+    -- 添加控制功能
     local function setAnimationSpeed(speed)
         animationSpeed = math.max(0.05, math.min(0.5, speed))
     end
     
     local function stopAnimation()
         isAnimating = false
-
+        -- 恢复原始纹理
         faceParticle.Texture = originalTexture
     end
     
     local function startAnimation()
         isAnimating = true
     end
-
+    
+    -- 添加到键盘控制
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         
         if input.KeyCode == Enum.KeyCode.F then
             isAnimating = not isAnimating
             if isAnimating then
-
+                print("面部粒子动画: 开启")
             else
-
+                print("面部粒子动画: 关闭")
             end
         end
     end)
@@ -1354,10 +1365,11 @@ local zigzagAmount = 0
 local zigzagSpeed = 2.0
 local zigzagIntensity = 0.3
 
+print("总路径点数量: " .. #allWaypoints)
 if #figureNodes > 0 then
-
+    print("模式: 房间50模式 (使用FigureNodes/1)")
 else
-
+    print("模式: 普通门路径点")
 end
 
 coroutine.wrap(function()
@@ -1561,8 +1573,9 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
-    local Workspace = game:GetService("Workspace")
+   local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+
 local waypointFolder = Workspace:FindFirstChild("A60_Waypoints")
 if not waypointFolder then
     waypointFolder = Instance.new("Folder")
@@ -1577,6 +1590,7 @@ end
 local allWaypoints = {}
 local figureNodes = {}
 
+-- 查找所有名为"1"的Part
 local function findAllOneParts(parent)
     for _, child in ipairs(parent:GetChildren()) do
         if child.Name == "1" and child:IsA("BasePart") then
@@ -1774,7 +1788,7 @@ else
 end
 
 local function addFaceParticleAnimation()
-
+    -- 查找名为"Face"的ParticleEmitter
     local faceParticle
     for _, child in ipairs(a60Model:GetDescendants()) do
         if child:IsA("ParticleEmitter") and child.Name == "Face" then
@@ -1784,10 +1798,13 @@ local function addFaceParticleAnimation()
     end
     
     if not faceParticle then
-
+        print("警告：未找到名为'Face'的ParticleEmitter")
         return
     end
-
+    
+    print("找到面部粒子发射器")
+    
+    -- 粒子纹理ID列表
     local particleTextures = {
         "rbxassetid://16020415559",
         "rbxassetid://16020423090", 
@@ -1801,50 +1818,57 @@ local function addFaceParticleAnimation()
     local currentTextureIndex = 1
     local animationSpeed = 0.1
     local isAnimating = true
-
+    
+    -- 保存原始粒子设置
     local originalTexture = faceParticle.Texture
     local originalEnabled = faceParticle.Enabled
-
+    
+    -- 面部粒子动画循环
     coroutine.wrap(function()
         while a60Model and a60Model.Parent and faceParticle and faceParticle.Parent and isAnimating do
-
+            -- 确保粒子发射器是启用的
             faceParticle.Enabled = true
-
+            
+            -- 应用当前纹理
             faceParticle.Texture = particleTextures[currentTextureIndex]
-
+            
+            -- 更新到下一个纹理
             currentTextureIndex = currentTextureIndex + 1
             if currentTextureIndex > #particleTextures then
                 currentTextureIndex = 1
             end
-
+            
+            -- 随机速度变化
             local currentSpeed = animationSpeed * (0.8 + math.random() * 0.4)
             wait(currentSpeed)
         end
     end)()
-
+    
+    -- 添加控制功能
     local function setAnimationSpeed(speed)
         animationSpeed = math.max(0.05, math.min(0.5, speed))
     end
     
     local function stopAnimation()
         isAnimating = false
-
+        -- 恢复原始纹理
         faceParticle.Texture = originalTexture
     end
     
     local function startAnimation()
         isAnimating = true
     end
-
-  UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    
+    -- 添加到键盘控制
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         
         if input.KeyCode == Enum.KeyCode.F then
             isAnimating = not isAnimating
             if isAnimating then
-
+                print("面部粒子动画: 开启")
             else
-
+                print("面部粒子动画: 关闭")
             end
         end
     end)
