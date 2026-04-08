@@ -837,7 +837,7 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local entity = spawner.Create({
 	Entity = {
 		Name = "A60",
