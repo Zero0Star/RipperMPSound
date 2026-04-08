@@ -4410,7 +4410,7 @@ local function runEvent()
 local entity = spawner.Create({
 	Entity = {
 		Name = "Chainsmoker",
-		Asset = "121250781195971",
+		Asset = "91743718986054",
 		HeightOffset = 1
 	},
 	Lights = {
