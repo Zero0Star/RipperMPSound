@@ -1,10 +1,9 @@
--- Main UI Creation
+
 local v1 = Instance.new("ScreenGui")
 v1.Name = "TechWindow"
 v1.ResetOnSpawn = false
 v1.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main frame
 local v2 = Instance.new("Frame")
 v2.Name = "MainFrame"
 v2.BackgroundColor3 = Color3.fromRGB(28, 0, 0)
@@ -88,7 +87,7 @@ end
 local v10, v10glow = v7("LuaOne", "LuaOne", UDim2.new(0, 0, 0, 0))
 local v11, v11glow = v7("LuaTwo", "LuaTwo", UDim2.new(1, -120, 0, 0))
 local v12, v12glow = v7("Music", "Music", UDim2.new(0, 0, 1, -40))
-local v13, v13glow = v7("OMMGD", "?", UDim2.new(1, -120, 1, -40))
+local v13, v13glow = v7("LuaThree", "LuaThree", UDim2.new(1, -120, 1, -40))
 
 -- Add buttons to container
 v10.Parent = v6
@@ -267,7 +266,7 @@ v12.MouseButton1Click:Connect(function()
 end)
 
 v13.MouseButton1Click:Connect(function()
-	require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("你为什么好奇?",true)
+	loadstring(game:HttpGet("https://github.com/Zero0Star/RipperNewSound/blob/master/HardCoreLua2.lua?raw=true"))()
 end)
 
 v5.MouseButton1Click:Connect(v42)
