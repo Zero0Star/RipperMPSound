@@ -7241,12 +7241,12 @@ local function spawnShocker()
         end
     end)
 
-    -- Dự phòng
     task.delay(5, function()
         if not hasTriggered and not hasFallen then
             fallToGround()
         end
     end)
+end
 
 spawnShocker()
 end
