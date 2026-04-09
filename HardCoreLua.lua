@@ -124,19 +124,7 @@ local function runEvent()
         Entity = {
             Name = "Ripper",
             Asset = "90276221585032",
-            HeightOffset = 6
-        },
-        Lights = {
-            Flicker = {
-                Enabled = false,
-                Duration = 10
-            },
-            Shatter = false,
-            Repair = false
-        },
-        Earthquake = {
-            Enabled = false
-        },
+            HeightOffset = 6},Lights = {Flicker = {Enabled = false,Duration = 10},Shatter = false,Repair = false},Earthquake = {Enabled = false},
         CameraShake = {
             Enabled = true,
             Range = 200,
@@ -295,6 +283,119 @@ end
 
 local function checkSound(sound)
     if sound:IsA("Sound") and sound.SoundId == "rbxassetid://101665501585468" then
+        local parent = sound.Parent
+        if parent and parent.Name == "Scary Entity" then
+            local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
+                if not checkedEntities[grandParent] then
+                    checkedEntities[grandParent] = true
+                    runEvent()
+                end
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    wait(0.1)
+    if obj:IsA("Sound") then
+        checkSound(obj)
+        if not listeningSounds[obj] then
+            listeningSounds[obj] = true
+            obj:GetPropertyChangedSignal("SoundId"):Connect(function()
+                checkSound(obj)
+            end)
+        end
+    end
+end)
+
+for _, entity in pairs(workspace:GetChildren()) do
+    if entity.Name == "CustomEntity" then
+        local scary = entity:FindFirstChild("Scary Entity")
+        if scary then
+            for _, child in pairs(scary:GetChildren()) do
+                if child:IsA("Sound") then
+                    checkSound(child)
+                    if not listeningSounds[child] then
+                        listeningSounds[child] = true
+                        child:GetPropertyChangedSignal("SoundId"):Connect(function()
+                            checkSound(child)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
+-----JEFF
+local checkedEntities = {}
+local listeningSounds = {}
+
+local function runEvent()
+    local RunService = game:GetService("RunService")
+local V1 = game:GetObjects("rbxassetid://132473459444776")[1]
+V1.Parent = workspace
+local V2 = workspace:WaitForChild("JeffTheKiller")
+local function HS()
+    if not V2 then return end
+    
+    local function HP(obj)
+        if obj:IsA("BasePart") then
+            obj.Transparency = 1
+            obj.CanCollide = false
+        end
+        
+        for _, child in ipairs(obj:GetChildren()) do
+            if child:IsA("Decal") or child:IsA("Texture") or child:IsA("SurfaceAppearance") then
+                child.Transparency = 1
+            elseif child:IsA("ParticleEmitter") or child:IsA("Beam") or child:IsA("Trail") then
+                child.Enabled = false
+            end
+            
+            HP(child)
+        end
+    end
+    local p1 = V2:FindFirstChild("Knife")
+    local p2 = V2:FindFirstChild("Head")
+    local p3 = V2:FindFirstChild("BoyAnimeHair_Black")
+    if p1 then HP(p1) end
+    if p2 then HP(p2) end
+    if p3 then
+        local handle = p3:FindFirstChild("Handle")
+        if handle then HP(handle) end
+    end
+end
+HS()
+local connection
+connection = V2.AncestryChanged:Connect(function(_, parent)
+    if not parent then
+        V1:Destroy()
+        if connection then
+            connection:Disconnect()
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if not V2 or not V2.Parent then 
+        V1:Destroy()
+        if connection then
+            connection:Disconnect()
+        end
+        return 
+    end
+    local root = V2:FindFirstChild("HumanoidRootPart") or V2:FindFirstChild("Torso")
+    if not root then return end
+    if V1:IsA("Model") and V1.PrimaryPart then
+        V1:SetPrimaryPartCFrame(root.CFrame)
+    elseif V1:IsA("BasePart") then
+        V1.CFrame = root.CFrame
+    end
+end)
+end
+
+local function checkSound(sound)
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://9045341575" then
         local parent = sound.Parent
         if parent and parent.Name == "Scary Entity" then
             local grandParent = parent.Parent
@@ -8162,26 +8263,19 @@ end
 
 local customSeekAudio = nil
 local audioLoaded = false
-
+local isReplacingSeek = false
+local currentCustomSeek = nil
+local latestSeekClone = nil
+local seekMusicAsset = nil
 
 local function loadAudioFromGitHub()
     spawn(function()
         pcall(function()
-
             local audioData = game:HttpGet(targetAudioUrl)
-
-            customSeekAudio = Instance.new("Sound")
-            customSeekAudio.Name = newFileName
-            customSeekAudio.Volume = volume
-
-            customSeekAudio.SoundId = "rbxassetid://" .. tostring(math.random(1000000, 9999999))
-
-            local audioBuffer = Instance.new("AudioBuffer")
-  
-            customSeekAudio.Parent = Workspace
-
+            writefile(newFileName .. ".mp3", audioData)
+            local customAsset = (getcustomasset or getsynasset)(newFileName .. ".mp3")
+            seekMusicAsset = customAsset
             audioLoaded = true
-
         end)
     end)
 end
@@ -8189,29 +8283,17 @@ end
 local function replaceSeekMusic()
     Workspace.DescendantAdded:Connect(function(descendant)
         if descendant.Parent ~= nil and descendant:IsA("Sound") then
-
             if descendant.Name == "SeekMusic" and descendant.Parent.Name == "SeekMovingNewClone" then
-
                 descendant.Volume = volume
-
-                if customSeekAudio and audioLoaded then
-
-                    descendant:Stop()
-
-                    local clonedAudio = customSeekAudio:Clone()
-                    clonedAudio.Parent = descendant.Parent
-                    clonedAudio.Name = "SeekMusic"
-
-                    clonedAudio:Play()
-
+                
+                if seekMusicAsset and audioLoaded then
+                    descendant.SoundId = seekMusicAsset
                 else
-
                     pcall(function()
                         local audioData = game:HttpGet(targetAudioUrl)
                         writefile(newFileName .. ".mp3", audioData)
                         local customAsset = (getcustomasset or getsynasset)(newFileName .. ".mp3")
                         descendant.SoundId = customAsset
-
                     end)
                 end
             end
@@ -8219,72 +8301,120 @@ local function replaceSeekMusic()
     end)
 end
 
+local function cleanupOldSeekModel()
+    if currentCustomSeek and currentCustomSeek.Parent then
+        currentCustomSeek:Destroy()
+        currentCustomSeek = nil
+    end
+    isReplacingSeek = false
+end
+
 local function replaceSeekModel()
-    ReplicatedStorage.GameData.LatestRoom.Changed:Connect(function()
-
+    local function checkAndReplace()
         wait(3.5)
-
+        
+        if isReplacingSeek then
+            return
+        end
+        
         if not Workspace:FindFirstChild("SeekMovingNewClone") then
             return
         end
         
         local originalSeek = Workspace.SeekMovingNewClone
+        
+        if latestSeekClone and latestSeekClone == originalSeek then
+            return
+        end
+        
+        latestSeekClone = originalSeek
+        isReplacingSeek = true
+        
+        cleanupOldSeekModel()
+        
         local originalRig = originalSeek:FindFirstChild("SeekRig")
-        if not originalRig then return end
-
-        local customSeekModel = game:GetObjects(CUSTOM_SEEK_MODEL_ID)[1]
+        if not originalRig then 
+            isReplacingSeek = false
+            return
+        end
+        
+        local customSeekModel
+        local success, err = pcall(function()
+            customSeekModel = game:GetObjects(CUSTOM_SEEK_MODEL_ID)[1]
+        end)
+        
+        if not success or not customSeekModel then
+            isReplacingSeek = false
+            return
+        end
+        
         customSeekModel.Name = "seek2"
-
+        
         for _, child in pairs(customSeekModel.Figure:GetChildren()) do
             if child:IsA("Sound") then
                 child:Stop()
             end
         end
-
+        
         if originalRig.Head:FindFirstChild("Eye") then
             originalRig.Head.Eye:Destroy()
         end
         if originalRig.Head:FindFirstChild("Black") then
             originalRig.Head.Black:Destroy()
         end
-
+        
         for _, child in pairs(originalRig:GetDescendants()) do
             if child.Name == "StringCheese" then
                 child:Destroy()
             end
         end
-
+        
         customSeekModel.Parent = Workspace
+        currentCustomSeek = customSeekModel
         local customRig = customSeekModel:FindFirstChild("SeekRig")
-
+        
+        if not customRig then
+            cleanupOldSeekModel()
+            return
+        end
+        
+        if not customRig:FindFirstChild("Root") then
+            cleanupOldSeekModel()
+            return
+        end
+        
         customRig:FindFirstChild("Root").Anchored = true
-
-        spawn(function()
-            while RunService.Heartbeat:Wait() and originalSeek do
-                if originalRig:FindFirstChild("Root") then
-                    customRig:FindFirstChild("Root").CFrame = originalRig:FindFirstChild("Root").CFrame
+        
+        local followConnection
+        followConnection = RunService.Heartbeat:Connect(function()
+            if not originalSeek or not originalSeek.Parent or not customSeekModel or not customSeekModel.Parent then
+                if followConnection then
+                    followConnection:Disconnect()
                 end
-                
-                for _, sound in pairs(originalSeek.Figure:GetChildren()) do
-                    if sound:IsA("Sound") then
-                        sound:Stop()
-                    end
+                return
+            end
+            
+            if originalRig:FindFirstChild("Root") and customRig:FindFirstChild("Root") then
+                customRig:FindFirstChild("Root").CFrame = originalRig:FindFirstChild("Root").CFrame
+            end
+            
+            for _, sound in pairs(originalSeek.Figure:GetChildren()) do
+                if sound:IsA("Sound") then
+                    sound:Stop()
                 end
-                
-                for _, part in pairs(originalRig:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.Transparency = 1
-                    end
+            end
+            
+            for _, part in pairs(originalRig:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Transparency = 1
                 end
             end
         end)
-
-        require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
-
+        
         repeat
             task.wait()
-        until originalSeek.SeekMusic.IsPlaying == true
-
+        until originalSeek:FindFirstChild("SeekMusic") and originalSeek.SeekMusic.IsPlaying == true
+        
         spawn(function()
             wait(7)
             if customSeekModel and customSeekModel.Parent then
@@ -8295,7 +8425,7 @@ local function replaceSeekModel()
                 figure["Splashing Far"]:Play()
             end
         end)
-
+        
         if customRig then
             local animController = customRig.AnimationController
             local raiseAnim = animController:LoadAnimation(customRig.AnimRaise)
@@ -8303,11 +8433,47 @@ local function replaceSeekModel()
             raiseAnim.Stopped:Wait()
             animController:LoadAnimation(customRig.AnimRun):Play()
         end
-    end)
+        
+        spawn(function()
+            ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+            
+            require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("使用你的体力!!!", true)
+            
+            if customSeekModel and customSeekModel.Parent then
+                for _, child in pairs(customSeekModel.Figure:GetChildren()) do
+                    if child:IsA("Sound") then
+                        child:Play()
+                    end
+                end
+            end
+        end)
+        
+        originalSeek.AncestryChanged:Connect(function(_, parent)
+            if parent == nil then
+                if followConnection then
+                    followConnection:Disconnect()
+                end
+                cleanupOldSeekModel()
+                latestSeekClone = nil
+            end
+        end)
+    end
+    
+    if ReplicatedStorage:FindFirstChild("GameData") and ReplicatedStorage.GameData:FindFirstChild("LatestRoom") then
+        ReplicatedStorage.GameData.LatestRoom.Changed:Connect(checkAndReplace)
+    else
+        spawn(function()
+            while true do
+                wait(2)
+                if Workspace:FindFirstChild("SeekMovingNewClone") and not isReplacingSeek then
+                    checkAndReplace()
+                end
+            end
+        end)
+    end
 end
 
 loadAudioFromGitHub()
-
 replaceSeekMusic()
 replaceSeekModel()
 
