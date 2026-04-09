@@ -688,7 +688,7 @@ local function runEvent()
     local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local REPLACEMENT_CONFIG = {
-    ["starjug"] = {assetId = 89687019396850}
+    ["starjug"] = {assetId = 90395549970314}
 }
 local CHECK_INTERVAL = 0.3
 local trackedTargets = {}
@@ -2284,7 +2284,7 @@ end
 end
 
 local function checkSound(sound)
-    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://7298463798" then
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://123091058956674" then
         local parent = sound.Parent
         if parent and parent.Name == "Scary Entity" then
             local grandParent = parent.Parent
