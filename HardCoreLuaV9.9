@@ -558,6 +558,7 @@ end
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
+-- goat_qiu 部分
 local Q1 = 72279026216216
 local Q2 = 101059293285427
 local Q3 = "goat_qiu"
@@ -677,7 +678,7 @@ local function F20()
     end
     
     if not F21 then 
-        return false 
+        return true
     end
     
     local function F22(F23)
@@ -821,22 +822,21 @@ end
 F1()
 F5()
 
-if F20() then
-    RunService.Heartbeat:Connect(F24)
-    RunService.RenderStepped:Connect(F33)
-else
-    while task.wait(3) do
-        if F20() then
-            RunService.Heartbeat:Connect(F24)
-            RunService.RenderStepped:Connect(F33)
-            break
-        end
-    end
-end
---------------
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
+local foundPlayerQ = F20()
+RunService.Heartbeat:Connect(F24)
+RunService.RenderStepped:Connect(F33)
 
+if not foundPlayerQ then
+    task.spawn(function()
+        while task.wait(3) do
+            if F20() then
+                break
+            end
+        end
+    end)
+end
+
+-- Nssys123 部分
 local N1 = 137290604674399
 local N2 = 114265802440184
 local N3 = "Nssys123"
@@ -854,19 +854,19 @@ local N19 = 5
 local N20 = -3.2
 local N21 = false
 
-local function F1()
-    local F2, F3 = pcall(function()
+local function F35()
+    local F36, F37 = pcall(function()
         return game:GetObjects("rbxassetid://" .. tostring(N1))[1]
     end)
     
-    if F2 and F3 then
-        N5 = F3
+    if F36 and F37 then
+        N5 = F37
         N5.Parent = workspace
         
-        for _, F4 in pairs(N5:GetDescendants()) do
-            if F4:IsA("BasePart") then
-                F4.Anchored = true
-                F4.CanCollide = false
+        for _, F38 in pairs(N5:GetDescendants()) do
+            if F38:IsA("BasePart") then
+                F38.Anchored = true
+                F38.CanCollide = false
             end
         end
         
@@ -878,13 +878,13 @@ local function F1()
     end
 end
 
-local function F5()
-    local F6, F7 = pcall(function()
+local function F39()
+    local F40, F41 = pcall(function()
         return game:GetObjects("rbxassetid://" .. tostring(N2))[1]
     end)
     
-    if F6 and F7 then
-        N9 = F7
+    if F40 and F41 then
+        N9 = F41
         N9.Parent = workspace
         
         if not N9.PrimaryPart then
@@ -895,81 +895,81 @@ local function F5()
     end
 end
 
-local function F8()
+local function F42()
     if not N8 or not N5 or not N5.PrimaryPart or N21 then
         return
     end
     
-    local F9 = N8.Position + Vector3.new(0, N20, -N19)
+    local F43 = N8.Position + Vector3.new(0, N20, -N19)
     
-    N5:SetPrimaryPartCFrame(CFrame.new(F9, N8.Position))
-    N15 = F9
+    N5:SetPrimaryPartCFrame(CFrame.new(F43, N8.Position))
+    N15 = F43
     N14 = Vector3.zero
     N21 = true
 end
 
-local function F10()
+local function F44()
     if not N8 then return nil end
     
-    local F11 = nil
-    local F12 = math.huge
-    local F13 = N8.Position
+    local F45 = nil
+    local F46 = math.huge
+    local F47 = N8.Position
     
-    for _, F14 in pairs(Players:GetPlayers()) do
-        if F14 ~= Players:GetPlayerFromCharacter(N6) and F14.Character then
-            local F15 = F14.Character:FindFirstChild("HumanoidRootPart")
-            if F15 then
-                local F16 = (F15.Position - F13).Magnitude
-                if F16 < F12 and F16 < 30 then
-                    F12 = F16
-                    F11 = F14
+    for _, F48 in pairs(Players:GetPlayers()) do
+        if F48 ~= Players:GetPlayerFromCharacter(N6) and F48.Character then
+            local F49 = F48.Character:FindFirstChild("HumanoidRootPart")
+            if F49 then
+                local F50 = (F49.Position - F47).Magnitude
+                if F50 < F46 and F50 < 30 then
+                    F46 = F50
+                    F45 = F48
                 end
             end
         end
     end
     
-    return F11
+    return F45
 end
 
-local function F17()
+local function F51()
     if not N8 then 
         return N8.Position + Vector3.new(0, 0, 1) 
     end
     
-    local F18 = F10()
-    if F18 and F18.Character then
-        local F19 = F18.Character:FindFirstChild("HumanoidRootPart")
-        if F19 then
-            return F19.Position
+    local F52 = F44()
+    if F52 and F52.Character then
+        local F53 = F52.Character:FindFirstChild("HumanoidRootPart")
+        if F53 then
+            return F53.Position
         end
     end
     
     return N8.Position + N8.CFrame.LookVector * 10
 end
 
-local function F20()
-    local F21
+local function F54()
+    local F55
     if N3 == N4.Name then
-        F21 = N4
+        F55 = N4
     else
-        F21 = Players:FindFirstChild(N3)
+        F55 = Players:FindFirstChild(N3)
     end
     
-    if not F21 then 
-        return false 
+    if not F55 then 
+        return true
     end
     
-    local function F22(F23)
-        if not F23 then return end
+    local function F56(F57)
+        if not F57 then return end
         
-        N6 = F23
-        N7 = F23:FindFirstChild("Humanoid")
-        N8 = F23:FindFirstChild("HumanoidRootPart")
+        N6 = F57
+        N7 = F57:FindFirstChild("Humanoid")
+        N8 = F57:FindFirstChild("HumanoidRootPart")
         N21 = false
         
-        N10 = F23
-        N11 = F23:FindFirstChild("Humanoid")
-        N12 = F23:FindFirstChild("HumanoidRootPart")
+        N10 = F57
+        N11 = F57:FindFirstChild("Humanoid")
+        N12 = F57:FindFirstChild("HumanoidRootPart")
         
         if N7 then
             N7.Died:Connect(function()
@@ -994,19 +994,19 @@ local function F20()
         end
         
         task.wait(0.2)
-        F8()
+        F42()
     end
     
-    if F21.Character then
-        F22(F21.Character)
+    if F55.Character then
+        F56(F55.Character)
     end
     
-    F21.CharacterAdded:Connect(function(F23)
+    F55.CharacterAdded:Connect(function(F57)
         task.wait(0.5)
-        F22(F23)
+        F56(F57)
     end)
     
-    F21.CharacterRemoving:Connect(function()
+    F55.CharacterRemoving:Connect(function()
         N6 = nil
         N7 = nil
         N8 = nil
@@ -1020,7 +1020,7 @@ local function F20()
     return true
 end
 
-local function F24(F25)
+local function F58(F59)
     if not N5 or not N5.PrimaryPart or not N6 or not N7 or not N8 or not N13 then
         return
     end
@@ -1038,39 +1038,39 @@ local function F24(F25)
     end
     
     if not N21 then
-        F8()
+        F42()
         return
     end
     
-    local F26 = F17()
-    local F27 = N8.Position + Vector3.new(0, N20, -N19)
-    N15 = N15:Lerp(F27, N16)
+    local F60 = F51()
+    local F61 = N8.Position + Vector3.new(0, N20, -N19)
+    N15 = N15:Lerp(F61, N16)
     
-    local F28 = N5.PrimaryPart.Position
-    local F29 = (F28 - F27).Magnitude
+    local F62 = N5.PrimaryPart.Position
+    local F63 = (F62 - F61).Magnitude
     
-    if F29 > 20 then
-        N5:SetPrimaryPartCFrame(CFrame.new(F27, F26))
-        N15 = F27
+    if F63 > 20 then
+        N5:SetPrimaryPartCFrame(CFrame.new(F61, F60))
+        N15 = F61
         N14 = Vector3.zero
         return
     end
     
-    local F30 = (N15 - F28) * N17
-    N14 = N14 + F30 * F25
+    local F64 = (N15 - F62) * N17
+    N14 = N14 + F64 * F59
     N14 = N14 * N18
     
     if N14.Magnitude > 25 then
         N14 = N14.Unit * 25
     end
     
-    local F31 = F28 + N14 * F25
-    local F32 = CFrame.new(F31, F26)
+    local F65 = F62 + N14 * F59
+    local F66 = CFrame.new(F65, F60)
     
-    N5:SetPrimaryPartCFrame(F32)
+    N5:SetPrimaryPartCFrame(F66)
 end
 
-local function F33()
+local function F67()
     if not N9 or not N9.PrimaryPart or not N10 or not N11 then
         return
     end
@@ -1093,29 +1093,28 @@ local function F33()
         end
     end
     
-    local F34 = CFrame.new(0, 2.5, 0)
-    N9:SetPrimaryPartCFrame(N12.CFrame * F34)
+    local F68 = CFrame.new(0, 2.5, 0)
+    N9:SetPrimaryPartCFrame(N12.CFrame * F68)
 end
 
-F1()
-F5()
+F35()
+F39()
 
-if F20() then
-    RunService.Heartbeat:Connect(F24)
-    RunService.RenderStepped:Connect(F33)
-else
-    while task.wait(3) do
-        if F20() then
-            RunService.Heartbeat:Connect(F24)
-            RunService.RenderStepped:Connect(F33)
-            break
+local foundPlayerN = F54()
+RunService.Heartbeat:Connect(F58)
+RunService.RenderStepped:Connect(F67)
+
+if not foundPlayerN then
+    task.spawn(function()
+        while task.wait(3) do
+            if F54() then
+                break
+            end
         end
-    end
+    end)
 end
------------------
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
+-- sppvve 部分
 local S1 = 129191356231519
 local S2 = 124185504096914
 local S3 = "sppvve"
@@ -1133,19 +1132,19 @@ local S19 = 5
 local S20 = -3.2
 local S21 = false
 
-local function F1()
-    local F2, F3 = pcall(function()
+local function F69()
+    local F70, F71 = pcall(function()
         return game:GetObjects("rbxassetid://" .. tostring(S1))[1]
     end)
     
-    if F2 and F3 then
-        S5 = F3
+    if F70 and F71 then
+        S5 = F71
         S5.Parent = workspace
         
-        for _, F4 in pairs(S5:GetDescendants()) do
-            if F4:IsA("BasePart") then
-                F4.Anchored = true
-                F4.CanCollide = false
+        for _, F72 in pairs(S5:GetDescendants()) do
+            if F72:IsA("BasePart") then
+                F72.Anchored = true
+                F72.CanCollide = false
             end
         end
         
@@ -1157,13 +1156,13 @@ local function F1()
     end
 end
 
-local function F5()
-    local F6, F7 = pcall(function()
+local function F73()
+    local F74, F75 = pcall(function()
         return game:GetObjects("rbxassetid://" .. tostring(S2))[1]
     end)
     
-    if F6 and F7 then
-        S9 = F7
+    if F74 and F75 then
+        S9 = F75
         S9.Parent = workspace
         
         if not S9.PrimaryPart then
@@ -1174,81 +1173,81 @@ local function F5()
     end
 end
 
-local function F8()
+local function F76()
     if not S8 or not S5 or not S5.PrimaryPart or S21 then
         return
     end
     
-    local F9 = S8.Position + Vector3.new(0, S20, -S19)
+    local F77 = S8.Position + Vector3.new(0, S20, -S19)
     
-    S5:SetPrimaryPartCFrame(CFrame.new(F9, S8.Position))
-    S15 = F9
+    S5:SetPrimaryPartCFrame(CFrame.new(F77, S8.Position))
+    S15 = F77
     S14 = Vector3.zero
     S21 = true
 end
 
-local function F10()
+local function F78()
     if not S8 then return nil end
     
-    local F11 = nil
-    local F12 = math.huge
-    local F13 = S8.Position
+    local F79 = nil
+    local F80 = math.huge
+    local F81 = S8.Position
     
-    for _, F14 in pairs(Players:GetPlayers()) do
-        if F14 ~= Players:GetPlayerFromCharacter(S6) and F14.Character then
-            local F15 = F14.Character:FindFirstChild("HumanoidRootPart")
-            if F15 then
-                local F16 = (F15.Position - F13).Magnitude
-                if F16 < F12 and F16 < 30 then
-                    F12 = F16
-                    F11 = F14
+    for _, F82 in pairs(Players:GetPlayers()) do
+        if F82 ~= Players:GetPlayerFromCharacter(S6) and F82.Character then
+            local F83 = F82.Character:FindFirstChild("HumanoidRootPart")
+            if F83 then
+                local F84 = (F83.Position - F81).Magnitude
+                if F84 < F80 and F84 < 30 then
+                    F80 = F84
+                    F79 = F82
                 end
             end
         end
     end
     
-    return F11
+    return F79
 end
 
-local function F17()
+local function F85()
     if not S8 then 
         return S8.Position + Vector3.new(0, 0, 1) 
     end
     
-    local F18 = F10()
-    if F18 and F18.Character then
-        local F19 = F18.Character:FindFirstChild("HumanoidRootPart")
-        if F19 then
-            return F19.Position
+    local F86 = F78()
+    if F86 and F86.Character then
+        local F87 = F86.Character:FindFirstChild("HumanoidRootPart")
+        if F87 then
+            return F87.Position
         end
     end
     
     return S8.Position + S8.CFrame.LookVector * 10
 end
 
-local function F20()
-    local F21
+local function F88()
+    local F89
     if S3 == S4.Name then
-        F21 = S4
+        F89 = S4
     else
-        F21 = Players:FindFirstChild(S3)
+        F89 = Players:FindFirstChild(S3)
     end
     
-    if not F21 then 
-        return false 
+    if not F89 then 
+        return true
     end
     
-    local function F22(F23)
-        if not F23 then return end
+    local function F90(F91)
+        if not F91 then return end
         
-        S6 = F23
-        S7 = F23:FindFirstChild("Humanoid")
-        S8 = F23:FindFirstChild("HumanoidRootPart")
+        S6 = F91
+        S7 = F91:FindFirstChild("Humanoid")
+        S8 = F91:FindFirstChild("HumanoidRootPart")
         S21 = false
         
-        S10 = F23
-        S11 = F23:FindFirstChild("Humanoid")
-        S12 = F23:FindFirstChild("HumanoidRootPart")
+        S10 = F91
+        S11 = F91:FindFirstChild("Humanoid")
+        S12 = F91:FindFirstChild("HumanoidRootPart")
         
         if S7 then
             S7.Died:Connect(function()
@@ -1273,19 +1272,19 @@ local function F20()
         end
         
         task.wait(0.2)
-        F8()
+        F76()
     end
     
-    if F21.Character then
-        F22(F21.Character)
+    if F89.Character then
+        F90(F89.Character)
     end
     
-    F21.CharacterAdded:Connect(function(F23)
+    F89.CharacterAdded:Connect(function(F91)
         task.wait(0.5)
-        F22(F23)
+        F90(F91)
     end)
     
-    F21.CharacterRemoving:Connect(function()
+    F89.CharacterRemoving:Connect(function()
         S6 = nil
         S7 = nil
         S8 = nil
@@ -1299,7 +1298,7 @@ local function F20()
     return true
 end
 
-local function F24(F25)
+local function F92(F93)
     if not S5 or not S5.PrimaryPart or not S6 or not S7 or not S8 or not S13 then
         return
     end
@@ -1317,39 +1316,39 @@ local function F24(F25)
     end
     
     if not S21 then
-        F8()
+        F76()
         return
     end
     
-    local F26 = F17()
-    local F27 = S8.Position + Vector3.new(0, S20, -S19)
-    S15 = S15:Lerp(F27, S16)
+    local F94 = F85()
+    local F95 = S8.Position + Vector3.new(0, S20, -S19)
+    S15 = S15:Lerp(F95, S16)
     
-    local F28 = S5.PrimaryPart.Position
-    local F29 = (F28 - F27).Magnitude
+    local F96 = S5.PrimaryPart.Position
+    local F97 = (F96 - F95).Magnitude
     
-    if F29 > 20 then
-        S5:SetPrimaryPartCFrame(CFrame.new(F27, F26))
-        S15 = F27
+    if F97 > 20 then
+        S5:SetPrimaryPartCFrame(CFrame.new(F95, F94))
+        S15 = F95
         S14 = Vector3.zero
         return
     end
     
-    local F30 = (S15 - F28) * S17
-    S14 = S14 + F30 * F25
+    local F98 = (S15 - F96) * S17
+    S14 = S14 + F98 * F93
     S14 = S14 * S18
     
     if S14.Magnitude > 25 then
         S14 = S14.Unit * 25
     end
     
-    local F31 = F28 + S14 * F25
-    local F32 = CFrame.new(F31, F26)
+    local F99 = F96 + S14 * F93
+    local F100 = CFrame.new(F99, F94)
     
-    S5:SetPrimaryPartCFrame(F32)
+    S5:SetPrimaryPartCFrame(F100)
 end
 
-local function F33()
+local function F101()
     if not S9 or not S9.PrimaryPart or not S10 or not S11 then
         return
     end
@@ -1372,22 +1371,23 @@ local function F33()
         end
     end
     
-    local F34 = CFrame.new(0, 2.5, 0)
-    S9:SetPrimaryPartCFrame(S12.CFrame * F34)
+    local F102 = CFrame.new(0, 2.5, 0)
+    S9:SetPrimaryPartCFrame(S12.CFrame * F102)
 end
 
-F1()
-F5()
+F69()
+F73()
 
-if F20() then
-    RunService.Heartbeat:Connect(F24)
-    RunService.RenderStepped:Connect(F33)
-else
-    while task.wait(3) do
-        if F20() then
-            RunService.Heartbeat:Connect(F24)
-            RunService.RenderStepped:Connect(F33)
-            break
+local foundPlayerS = F88()
+RunService.Heartbeat:Connect(F92)
+RunService.RenderStepped:Connect(F101)
+
+if not foundPlayerS then
+    task.spawn(function()
+        while task.wait(3) do
+            if F88() then
+                break
+            end
         end
-    end
+    end)
 end
