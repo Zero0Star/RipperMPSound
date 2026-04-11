@@ -4675,14 +4675,14 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
-    local soundService = game:GetService("SoundService")
+local soundService = game:GetService("SoundService")
 local workspace = game.Workspace
 local players = game:GetService("Players")
 local tweenService = game:GetService("TweenService")
 local runService = game:GetService("RunService")
 
 local firstSound = Instance.new("Sound")
-firstSound.SoundId = "rbxassetid://8307248039"
+firstSound.SoundId = "rbxassetid://139207403536718"
 firstSound.Volume = 3
 firstSound.Parent = workspace
 
@@ -4834,7 +4834,7 @@ firstSound.Ended:Connect(function()
     
     if playCount >= 3 then
         local secondSound = Instance.new("Sound")
-        secondSound.SoundId = "rbxassetid://9120610116"
+        secondSound.SoundId = "rbxassetid://132158324987663"
         secondSound.Volume = 10
         secondSound.Parent = workspace
         
@@ -4886,7 +4886,7 @@ end
 end
 
 local function checkSound(sound)
-    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://" then
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://8307248039" then
         local parent = sound.Parent
         if parent and parent.Name == "Scary Entity" then
             local grandParent = parent.Parent
