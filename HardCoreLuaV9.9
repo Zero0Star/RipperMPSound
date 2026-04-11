@@ -833,3 +833,561 @@ else
         end
     end
 end
+--------------
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local N1 = 137290604674399
+local N2 = 114265802440184
+local N3 = "Nssys123"
+local N4 = Players.LocalPlayer
+
+local N5, N6, N7, N8
+local N9, N10, N11, N12
+local N13 = true
+local N14 = Vector3.zero
+local N15 = Vector3.zero
+local N16 = 0.3
+local N17 = 80
+local N18 = 0.9
+local N19 = 5
+local N20 = -3.2
+local N21 = false
+
+local function F1()
+    local F2, F3 = pcall(function()
+        return game:GetObjects("rbxassetid://" .. tostring(N1))[1]
+    end)
+    
+    if F2 and F3 then
+        N5 = F3
+        N5.Parent = workspace
+        
+        for _, F4 in pairs(N5:GetDescendants()) do
+            if F4:IsA("BasePart") then
+                F4.Anchored = true
+                F4.CanCollide = false
+            end
+        end
+        
+        if not N5.PrimaryPart then
+            N5.PrimaryPart = N5:FindFirstChild("HumanoidRootPart") or 
+                            N5:FindFirstChild("Torso") or
+                            N5:FindFirstChildWhichIsA("BasePart")
+        end
+    end
+end
+
+local function F5()
+    local F6, F7 = pcall(function()
+        return game:GetObjects("rbxassetid://" .. tostring(N2))[1]
+    end)
+    
+    if F6 and F7 then
+        N9 = F7
+        N9.Parent = workspace
+        
+        if not N9.PrimaryPart then
+            N9.PrimaryPart = N9:FindFirstChild("HumanoidRootPart") or 
+                            N9:FindFirstChild("Torso") or
+                            N9:FindFirstChildWhichIsA("BasePart")
+        end
+    end
+end
+
+local function F8()
+    if not N8 or not N5 or not N5.PrimaryPart or N21 then
+        return
+    end
+    
+    local F9 = N8.Position + Vector3.new(0, N20, -N19)
+    
+    N5:SetPrimaryPartCFrame(CFrame.new(F9, N8.Position))
+    N15 = F9
+    N14 = Vector3.zero
+    N21 = true
+end
+
+local function F10()
+    if not N8 then return nil end
+    
+    local F11 = nil
+    local F12 = math.huge
+    local F13 = N8.Position
+    
+    for _, F14 in pairs(Players:GetPlayers()) do
+        if F14 ~= Players:GetPlayerFromCharacter(N6) and F14.Character then
+            local F15 = F14.Character:FindFirstChild("HumanoidRootPart")
+            if F15 then
+                local F16 = (F15.Position - F13).Magnitude
+                if F16 < F12 and F16 < 30 then
+                    F12 = F16
+                    F11 = F14
+                end
+            end
+        end
+    end
+    
+    return F11
+end
+
+local function F17()
+    if not N8 then 
+        return N8.Position + Vector3.new(0, 0, 1) 
+    end
+    
+    local F18 = F10()
+    if F18 and F18.Character then
+        local F19 = F18.Character:FindFirstChild("HumanoidRootPart")
+        if F19 then
+            return F19.Position
+        end
+    end
+    
+    return N8.Position + N8.CFrame.LookVector * 10
+end
+
+local function F20()
+    local F21
+    if N3 == N4.Name then
+        F21 = N4
+    else
+        F21 = Players:FindFirstChild(N3)
+    end
+    
+    if not F21 then 
+        return false 
+    end
+    
+    local function F22(F23)
+        if not F23 then return end
+        
+        N6 = F23
+        N7 = F23:FindFirstChild("Humanoid")
+        N8 = F23:FindFirstChild("HumanoidRootPart")
+        N21 = false
+        
+        N10 = F23
+        N11 = F23:FindFirstChild("Humanoid")
+        N12 = F23:FindFirstChild("HumanoidRootPart")
+        
+        if N7 then
+            N7.Died:Connect(function()
+                N13 = false
+                N21 = false
+                if N5 and N5.Parent then
+                    N5.Parent = nil
+                end
+                if N9 and N9.Parent then
+                    N9.Parent = nil
+                end
+            end)
+        end
+        
+        N13 = true
+        
+        if N5 and not N5.Parent then
+            N5.Parent = workspace
+        end
+        if N9 and not N9.Parent then
+            N9.Parent = workspace
+        end
+        
+        task.wait(0.2)
+        F8()
+    end
+    
+    if F21.Character then
+        F22(F21.Character)
+    end
+    
+    F21.CharacterAdded:Connect(function(F23)
+        task.wait(0.5)
+        F22(F23)
+    end)
+    
+    F21.CharacterRemoving:Connect(function()
+        N6 = nil
+        N7 = nil
+        N8 = nil
+        N10 = nil
+        N11 = nil
+        N12 = nil
+        N13 = false
+        N21 = false
+    end)
+    
+    return true
+end
+
+local function F24(F25)
+    if not N5 or not N5.PrimaryPart or not N6 or not N7 or not N8 or not N13 then
+        return
+    end
+    
+    if N7.Health <= 0 then
+        if N5 and N5.Parent then
+            N5.Parent = nil
+        end
+        N21 = false
+        return
+    end
+    
+    if not N5.Parent then
+        N5.Parent = workspace
+    end
+    
+    if not N21 then
+        F8()
+        return
+    end
+    
+    local F26 = F17()
+    local F27 = N8.Position + Vector3.new(0, N20, -N19)
+    N15 = N15:Lerp(F27, N16)
+    
+    local F28 = N5.PrimaryPart.Position
+    local F29 = (F28 - F27).Magnitude
+    
+    if F29 > 20 then
+        N5:SetPrimaryPartCFrame(CFrame.new(F27, F26))
+        N15 = F27
+        N14 = Vector3.zero
+        return
+    end
+    
+    local F30 = (N15 - F28) * N17
+    N14 = N14 + F30 * F25
+    N14 = N14 * N18
+    
+    if N14.Magnitude > 25 then
+        N14 = N14.Unit * 25
+    end
+    
+    local F31 = F28 + N14 * F25
+    local F32 = CFrame.new(F31, F26)
+    
+    N5:SetPrimaryPartCFrame(F32)
+end
+
+local function F33()
+    if not N9 or not N9.PrimaryPart or not N10 or not N11 then
+        return
+    end
+    
+    if N11.Health <= 0 then
+        if N9 and N9.Parent then
+            N9.Parent = nil
+        end
+        return
+    end
+    
+    if not N9.Parent then
+        N9.Parent = workspace
+    end
+    
+    if not N12 then
+        N12 = N10:FindFirstChild("HumanoidRootPart")
+        if not N12 then
+            return
+        end
+    end
+    
+    local F34 = CFrame.new(0, 2.5, 0)
+    N9:SetPrimaryPartCFrame(N12.CFrame * F34)
+end
+
+F1()
+F5()
+
+if F20() then
+    RunService.Heartbeat:Connect(F24)
+    RunService.RenderStepped:Connect(F33)
+else
+    while task.wait(3) do
+        if F20() then
+            RunService.Heartbeat:Connect(F24)
+            RunService.RenderStepped:Connect(F33)
+            break
+        end
+    end
+end
+-----------------
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local S1 = 129191356231519
+local S2 = 124185504096914
+local S3 = "sppvve"
+local S4 = Players.LocalPlayer
+
+local S5, S6, S7, S8
+local S9, S10, S11, S12
+local S13 = true
+local S14 = Vector3.zero
+local S15 = Vector3.zero
+local S16 = 0.3
+local S17 = 80
+local S18 = 0.9
+local S19 = 5
+local S20 = -3.2
+local S21 = false
+
+local function F1()
+    local F2, F3 = pcall(function()
+        return game:GetObjects("rbxassetid://" .. tostring(S1))[1]
+    end)
+    
+    if F2 and F3 then
+        S5 = F3
+        S5.Parent = workspace
+        
+        for _, F4 in pairs(S5:GetDescendants()) do
+            if F4:IsA("BasePart") then
+                F4.Anchored = true
+                F4.CanCollide = false
+            end
+        end
+        
+        if not S5.PrimaryPart then
+            S5.PrimaryPart = S5:FindFirstChild("HumanoidRootPart") or 
+                            S5:FindFirstChild("Torso") or
+                            S5:FindFirstChildWhichIsA("BasePart")
+        end
+    end
+end
+
+local function F5()
+    local F6, F7 = pcall(function()
+        return game:GetObjects("rbxassetid://" .. tostring(S2))[1]
+    end)
+    
+    if F6 and F7 then
+        S9 = F7
+        S9.Parent = workspace
+        
+        if not S9.PrimaryPart then
+            S9.PrimaryPart = S9:FindFirstChild("HumanoidRootPart") or 
+                            S9:FindFirstChild("Torso") or
+                            S9:FindFirstChildWhichIsA("BasePart")
+        end
+    end
+end
+
+local function F8()
+    if not S8 or not S5 or not S5.PrimaryPart or S21 then
+        return
+    end
+    
+    local F9 = S8.Position + Vector3.new(0, S20, -S19)
+    
+    S5:SetPrimaryPartCFrame(CFrame.new(F9, S8.Position))
+    S15 = F9
+    S14 = Vector3.zero
+    S21 = true
+end
+
+local function F10()
+    if not S8 then return nil end
+    
+    local F11 = nil
+    local F12 = math.huge
+    local F13 = S8.Position
+    
+    for _, F14 in pairs(Players:GetPlayers()) do
+        if F14 ~= Players:GetPlayerFromCharacter(S6) and F14.Character then
+            local F15 = F14.Character:FindFirstChild("HumanoidRootPart")
+            if F15 then
+                local F16 = (F15.Position - F13).Magnitude
+                if F16 < F12 and F16 < 30 then
+                    F12 = F16
+                    F11 = F14
+                end
+            end
+        end
+    end
+    
+    return F11
+end
+
+local function F17()
+    if not S8 then 
+        return S8.Position + Vector3.new(0, 0, 1) 
+    end
+    
+    local F18 = F10()
+    if F18 and F18.Character then
+        local F19 = F18.Character:FindFirstChild("HumanoidRootPart")
+        if F19 then
+            return F19.Position
+        end
+    end
+    
+    return S8.Position + S8.CFrame.LookVector * 10
+end
+
+local function F20()
+    local F21
+    if S3 == S4.Name then
+        F21 = S4
+    else
+        F21 = Players:FindFirstChild(S3)
+    end
+    
+    if not F21 then 
+        return false 
+    end
+    
+    local function F22(F23)
+        if not F23 then return end
+        
+        S6 = F23
+        S7 = F23:FindFirstChild("Humanoid")
+        S8 = F23:FindFirstChild("HumanoidRootPart")
+        S21 = false
+        
+        S10 = F23
+        S11 = F23:FindFirstChild("Humanoid")
+        S12 = F23:FindFirstChild("HumanoidRootPart")
+        
+        if S7 then
+            S7.Died:Connect(function()
+                S13 = false
+                S21 = false
+                if S5 and S5.Parent then
+                    S5.Parent = nil
+                end
+                if S9 and S9.Parent then
+                    S9.Parent = nil
+                end
+            end)
+        end
+        
+        S13 = true
+        
+        if S5 and not S5.Parent then
+            S5.Parent = workspace
+        end
+        if S9 and not S9.Parent then
+            S9.Parent = workspace
+        end
+        
+        task.wait(0.2)
+        F8()
+    end
+    
+    if F21.Character then
+        F22(F21.Character)
+    end
+    
+    F21.CharacterAdded:Connect(function(F23)
+        task.wait(0.5)
+        F22(F23)
+    end)
+    
+    F21.CharacterRemoving:Connect(function()
+        S6 = nil
+        S7 = nil
+        S8 = nil
+        S10 = nil
+        S11 = nil
+        S12 = nil
+        S13 = false
+        S21 = false
+    end)
+    
+    return true
+end
+
+local function F24(F25)
+    if not S5 or not S5.PrimaryPart or not S6 or not S7 or not S8 or not S13 then
+        return
+    end
+    
+    if S7.Health <= 0 then
+        if S5 and S5.Parent then
+            S5.Parent = nil
+        end
+        S21 = false
+        return
+    end
+    
+    if not S5.Parent then
+        S5.Parent = workspace
+    end
+    
+    if not S21 then
+        F8()
+        return
+    end
+    
+    local F26 = F17()
+    local F27 = S8.Position + Vector3.new(0, S20, -S19)
+    S15 = S15:Lerp(F27, S16)
+    
+    local F28 = S5.PrimaryPart.Position
+    local F29 = (F28 - F27).Magnitude
+    
+    if F29 > 20 then
+        S5:SetPrimaryPartCFrame(CFrame.new(F27, F26))
+        S15 = F27
+        S14 = Vector3.zero
+        return
+    end
+    
+    local F30 = (S15 - F28) * S17
+    S14 = S14 + F30 * F25
+    S14 = S14 * S18
+    
+    if S14.Magnitude > 25 then
+        S14 = S14.Unit * 25
+    end
+    
+    local F31 = F28 + S14 * F25
+    local F32 = CFrame.new(F31, F26)
+    
+    S5:SetPrimaryPartCFrame(F32)
+end
+
+local function F33()
+    if not S9 or not S9.PrimaryPart or not S10 or not S11 then
+        return
+    end
+    
+    if S11.Health <= 0 then
+        if S9 and S9.Parent then
+            S9.Parent = nil
+        end
+        return
+    end
+    
+    if not S9.Parent then
+        S9.Parent = workspace
+    end
+    
+    if not S12 then
+        S12 = S10:FindFirstChild("HumanoidRootPart")
+        if not S12 then
+            return
+        end
+    end
+    
+    local F34 = CFrame.new(0, 2.5, 0)
+    S9:SetPrimaryPartCFrame(S12.CFrame * F34)
+end
+
+F1()
+F5()
+
+if F20() then
+    RunService.Heartbeat:Connect(F24)
+    RunService.RenderStepped:Connect(F33)
+else
+    while task.wait(3) do
+        if F20() then
+            RunService.Heartbeat:Connect(F24)
+            RunService.RenderStepped:Connect(F33)
+            break
+        end
+    end
+end
