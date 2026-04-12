@@ -4986,6 +4986,133 @@ for _, entity in pairs(workspace:GetChildren()) do
         end
     end
 end
+----------
+local checkedEntities = {}
+local listeningSounds = {}
+
+local function runEvent()
+    function GetRoom()
+    local gruh = workspace.CurrentRooms
+    return gruh:FindFirstChild(game.ReplicatedStorage.GameData.LatestRoom.Value)
+end
+
+local plr = game.Players.LocalPlayer
+local chr = plr.Character or plr.CharacterAdded:Wait()
+local tweenservice = game:GetService("TweenService")
+
+function LoadCustomInstance(source, parent)
+    local model
+
+    local function NormalizeGitHubURL(url)
+        if url:match("^https://github.com/.+%.rbxm$") and not url:find("?raw=true") then
+            return url .. "?raw=true"
+        end
+        return url
+    end
+
+    while task.wait() and not model do
+        if tonumber(source) then
+            local success, result = pcall(function()
+                return game:GetObjects("rbxassetid://" .. tostring(source))[1]
+            end)
+            if success and result then
+                model = result
+            end
+        elseif typeof(source) == "string" and source:match("^https?://") and source:match("%.rbxm") then
+            local url = NormalizeGitHubURL(source)
+            local success, result = pcall(function()
+                local filename = "temp_" .. math.random(100000, 999999) .. ".rbxm"
+                local content = game:HttpGet(url)
+                if writefile and (getcustomasset or getsynasset) and isfile and delfile then
+                    writefile(filename, content)
+                    local assetFunc = getcustomasset or getsynasset
+                    local obj = game:GetObjects(assetFunc(filename))[1]
+                    delfile(filename)
+                    return obj
+                else
+                    warn("Executor không hỗ trợ file APIs.")
+                    return nil
+                end
+            end)
+            if success and result then
+                model = result
+            end
+        else
+            break
+        end
+
+        if model then
+            model.Parent = parent or workspace
+            for _, obj in ipairs(model:GetDescendants()) do
+                if obj:IsA("Script") or obj:IsA("LocalScript") then
+                    obj:Destroy()
+                end
+            end
+            pcall(function()
+                model:SetAttribute("LoadedByExecutor", true)
+            end)
+        end
+    end
+
+    return model
+end
+
+local s = LoadCustomInstance(106818719931200, workspace)
+if not s then
+    return
+end
+
+local entity = s:FindFirstChildWhichIsA("BasePart")
+entity.CFrame = GetRoom():WaitForChild("RoomEntrance").CFrame * CFrame.new(0, 7, -15)
+entity.Part.CFrame = entity.CFrame
+end
+
+local function checkSound(sound)
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://109690961059477" then
+        local parent = sound.Parent
+        if parent and parent.Name == "Scary Entity" then
+            local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
+                if not checkedEntities[grandParent] then
+                    checkedEntities[grandParent] = true
+                    runEvent()
+                end
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    wait(0.1)
+    if obj:IsA("Sound") then
+        checkSound(obj)
+        if not listeningSounds[obj] then
+            listeningSounds[obj] = true
+            obj:GetPropertyChangedSignal("SoundId"):Connect(function()
+                checkSound(obj)
+            end)
+        end
+    end
+end)
+
+for _, entity in pairs(workspace:GetChildren()) do
+    if entity.Name == "CustomEntity" then
+        local scary = entity:FindFirstChild("Scary Entity")
+        if scary then
+            for _, child in pairs(scary:GetChildren()) do
+                if child:IsA("Sound") then
+                    checkSound(child)
+                    if not listeningSounds[child] then
+                        listeningSounds[child] = true
+                        child:GetPropertyChangedSignal("SoundId"):Connect(function()
+                            checkSound(child)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
 -----
 local hint = Instance.new("Hint", Workspace)
 hint.Text = "LoadingTwo... Doors HardCore V9.8 By Mr.key & HeavenNow :)"
