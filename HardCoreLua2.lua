@@ -5,6 +5,99 @@ local listeningSounds = {}
 
 local function runEvent()
     local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local entity = spawner.Create({
+	Entity = {
+		Name = "Angler",
+		Asset = "137184736069143",
+		HeightOffset = -0.6},Lights = {Flicker = {Enabled = true,Duration = 2},Shatter = true,Repair = false},Earthquake = {Enabled = false},CameraShake = {Enabled = true,Range = 200,Values = {1.5, 20, 0.1, 1}},
+	Movement = {Speed = 110,Delay = 3,Reversed = false},Rebounding = {Enabled = false,Type = "ambush",Min = 4,Max = 4,Delay = math.random(10, 30) / 10},Damage = {Enabled = true,Range = 100,
+		Amount = 125},Crucifixion = {Enabled = true,Range = 100,Resist = false,Break = true},Death = {Type = "Guiding",Hints = {"你死于Angler", "他和Rush一样", "看见闪灯时躲避", "这非常简单"},Cause = ""}})
+
+entity:SetCallback("OnRebounding", function(startOfRebound)
+	local entityModel = entity.Model
+	local main = entityModel:WaitForChild("Main")
+	local attachment = main:WaitForChild("Attachment")
+	local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
+	local sounds = {
+		footsteps = main:WaitForChild("Footsteps"),
+		playSound = main:WaitForChild("PlaySound"),
+		switch = main:WaitForChild("Switch"),
+		switchBack = main:WaitForChild("SwitchBack")
+	}
+
+	for _, c in attachment:GetChildren() do
+		c.Enabled = (not startOfRebound)
+	end
+	for _, c in AttachmentSwitch:GetChildren() do
+		c.Enabled = startOfRebound
+	end
+
+	if startOfRebound == true then
+		sounds.footsteps.PlaybackSpeed = 0.35
+		sounds.playSound.PlaybackSpeed = 0.25
+		sounds.switch:Play()
+	else
+		sounds.footsteps.PlaybackSpeed = 0.25
+		sounds.playSound.PlaybackSpeed = 0.16
+		sounds.switchBack:Play()
+	end
+	
+end)
+entity:Run()
+end
+
+local function checkSound(sound)
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://119672184905651" then
+        local parent = sound.Parent
+        if parent and parent.Name == "Scary Entity" then
+            local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
+                if not checkedEntities[grandParent] then
+                    checkedEntities[grandParent] = true
+                    runEvent()
+                end
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    wait(0.1)
+    if obj:IsA("Sound") then
+        checkSound(obj)
+        if not listeningSounds[obj] then
+            listeningSounds[obj] = true
+            obj:GetPropertyChangedSignal("SoundId"):Connect(function()
+                checkSound(obj)
+            end)
+        end
+    end
+end)
+
+for _, entity in pairs(workspace:GetChildren()) do
+    if entity.Name == "CustomEntity" then
+        local scary = entity:FindFirstChild("Scary Entity")
+        if scary then
+            for _, child in pairs(scary:GetChildren()) do
+                if child:IsA("Sound") then
+                    checkSound(child)
+                    if not listeningSounds[child] then
+                        listeningSounds[child] = true
+                        child:GetPropertyChangedSignal("SoundId"):Connect(function()
+                            checkSound(child)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
+-------------
+local checkedEntities = {}
+local listeningSounds = {}
+
+local function runEvent()
+    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
