@@ -4466,7 +4466,7 @@ local function loadAndPlayAudio()
         sound.Name = "ML"
         sound.SoundId = customAsset
         sound.Looped = true
-        sound.Volume = 2
+        sound.Volume = 0
         sound.Parent = Workspace
         sound:Play()
     end)
@@ -4608,13 +4608,13 @@ end
 
 pcall(function()
     local mainGame = require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
-    mainGame.caption("Some people always think they can control the overall situation.", true)
+    mainGame.caption("I think the purpose of my coming.", true)
     wait(10)
-    mainGame.caption("Are you kidding me?", true)
+    mainGame.caption("I have something very important to tell you, please listen to me until I finish.", true)
     wait(10)
-    mainGame.caption("You will regret the things you have done", true)
+    mainGame.caption("That egg is very dangerous, please do not use it.", true)
     wait(10)
-    mainGame.caption("At least for now....", true)
+    mainGame.caption("Otherwise, you will bear the consequences yourself....", true)
 end)
 wait(6)
 if Workspace:FindFirstChild("MISHX") then
