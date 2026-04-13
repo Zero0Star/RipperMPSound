@@ -1,6 +1,7 @@
 local checkedEntities = {}
 local listeningSounds = {}
-   local Players = game:GetService("Players")
+local function runEvent()
+    local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -596,15 +597,14 @@ local function main()
 end
 
 main()
-local function runEvent()
-     
 end
 
 local function checkSound(sound)
-    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://111351357978027" then
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://" then
         local parent = sound.Parent
         if parent and parent.Name == "Scary Entity" then
             local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
                 if not checkedEntities[grandParent] then
                     checkedEntities[grandParent] = true
                     runEvent()
@@ -612,6 +612,7 @@ local function checkSound(sound)
             end
         end
     end
+end
 
 workspace.DescendantAdded:Connect(function(obj)
     wait(0.1)
@@ -644,7 +645,6 @@ for _, entity in pairs(workspace:GetChildren()) do
         end
     end
 end
-
 ---------A60
 local checkedEntities = {}
 local listeningSounds = {}
