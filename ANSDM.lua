@@ -837,8 +837,8 @@ if not foundPlayerN then
 end
 
 -- sppvve 部分
-local S1 = 129191356231519
-local S2 = 105644652893418
+local S1 = 101340853697564
+local S2 = 99067212911489
 local S3 = "sppvve"
 local S4 = Players.LocalPlayer
 

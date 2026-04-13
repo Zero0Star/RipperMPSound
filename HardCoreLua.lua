@@ -1,8 +1,6 @@
 local checkedEntities = {}
 local listeningSounds = {}
-
-local function runEvent()
-    local Players = game:GetService("Players")
+   local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -27,7 +25,17 @@ local gameData = {
     timeProgress = 0
 }
 
+local isPlayerDead = false
+local killEffectPlayed = false
+
 local function showKillEffect()
+    if killEffectPlayed then
+        return
+    end
+    
+    killEffectPlayed = true
+    isPlayerDead = true
+    
     local playerGui = player:WaitForChild("PlayerGui")
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "KillEffect"
@@ -37,7 +45,7 @@ local function showKillEffect()
     for _, child in ipairs(screenGui:GetChildren()) do
         child:Destroy()
     end
-
+    
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://112123002526111"
     sound.Volume = 4
@@ -90,6 +98,20 @@ local function showSurviveEffect()
     end
 end
 
+local function isPlayerAlive()
+    local character = player.Character
+    if not character then
+        return false
+    end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then
+        return false
+    end
+    
+    return humanoid.Health > 0
+end
+
 local function GitAud(soundgit, filename)
     local url = soundgit
     local FileName = filename
@@ -105,6 +127,37 @@ local function CustomGitSound(soundlink, vol, filename)
     sound.Volume = vol
     sound:Play()
     return sound
+end
+
+local function loadMusicOnly()
+    local targetAudioUrl = "https://github.com/Zero0Star/RipperNewSound/blob/master/Z367Music.mp3?raw=true"
+    local localFileName = "Z367Music"
+    
+    local gameMusic = nil
+    local success, errorMsg = pcall(function()
+        gameMusic = CustomGitSound(targetAudioUrl, 3, localFileName)
+    end)
+    
+    if not success then
+        gameMusic = Instance.new("Sound")
+        gameMusic.Name = "Z367MusicFallback"
+        gameMusic.Volume = 0
+        gameMusic.Parent = workspace
+    end
+    
+    if gameMusic then
+        repeat
+            wait(0.1)
+        until gameMusic.IsPlaying
+    end
+    
+    if gameMusic then
+        wait(gameMusic.TimeLength or 61)
+        if gameMusic and gameMusic.Parent then
+            gameMusic:Stop()
+            gameMusic:Destroy()
+        end
+    end
 end
 
 local function createGameUI()
@@ -529,10 +582,22 @@ local function startGame()
     
     return ui
 end
-wait(2)
-if not gameData.gameActive then
-    startGame()
+
+local function main()
+    wait(2)
+    
+    if isPlayerAlive() then
+        if not gameData.gameActive then
+            startGame()
+        end
+    else
+        loadMusicOnly()
+    end
 end
+
+main()
+local function runEvent()
+     
 end
 
 local function checkSound(sound)
