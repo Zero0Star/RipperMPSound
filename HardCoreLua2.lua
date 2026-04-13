@@ -1081,6 +1081,359 @@ for _, entity in pairs(workspace:GetChildren()) do
         end
     end
 end
+-------------------ST
+local checkedEntities = {}
+local listeningSounds = {}
+
+local function runEvent()
+    local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local REPLACEMENT_CONFIG = {
+    ["generatorfuse"] = {assetId = 138693840664582}
+}
+local CHECK_INTERVAL = 0.3
+local trackedTargets = {}
+
+local function loadAssetLocally(assetId)
+    local success, result = pcall(function()
+        return game:GetObjects("rbxassetid://" .. assetId)[1]
+    end)
+    if success and result then
+        return result:Clone()
+    end
+    return nil
+end
+
+local function disableModelCollision(model)
+    for _, part in ipairs(model:GetDescendants()) do
+        if part:IsA("BasePart") or part:IsA("MeshPart") then
+            part.CanCollide = false
+            part.CanTouch = false
+            part.CanQuery = false
+        end
+    end
+end
+
+local function hideGeneratorFuseParts(generatorFuse)
+    if not generatorFuse or not generatorFuse.Parent then return end
+    
+    local function hideRecursive(obj)
+        if obj:IsA("MeshPart") or obj:IsA("BasePart") then
+            if not trackedTargets[generatorFuse] then
+                trackedTargets[generatorFuse] = {originalParts = {}}
+            end
+            trackedTargets[generatorFuse].originalParts[obj] = {transparency = obj.Transparency}
+            obj.Transparency = 1
+        end
+        
+        if obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") then
+            if not trackedTargets[generatorFuse] then
+                trackedTargets[generatorFuse] = {originalParts = {}}
+            end
+            trackedTargets[generatorFuse].originalParts[obj] = {enabled = obj.Enabled}
+            obj.Enabled = false
+        end
+        
+        if obj:IsA("Texture") or obj:IsA("Decal") or obj:IsA("SurfaceAppearance") then
+            if not trackedTargets[generatorFuse] then
+                trackedTargets[generatorFuse] = {originalParts = {}}
+            end
+            trackedTargets[generatorFuse].originalParts[obj] = {transparency = obj.Transparency}
+            obj.Transparency = 1
+        end
+        
+        for _, child in ipairs(obj:GetChildren()) do
+            hideRecursive(child)
+        end
+    end
+    
+    hideRecursive(generatorFuse)
+end
+
+local function restoreGeneratorFuse(generatorFuse)
+    local data = trackedTargets[generatorFuse]
+    if not data or not data.originalParts then return end
+    
+    for part, partData in pairs(data.originalParts) do
+        if part and part.Parent then
+            if (part:IsA("MeshPart") or part:IsA("BasePart")) and partData.transparency then
+                part.Transparency = partData.transparency
+            elseif (part:IsA("ParticleEmitter") or part:IsA("Beam") or part:IsA("Trail")) and partData.enabled ~= nil then
+                part.Enabled = partData.enabled
+            elseif (part:IsA("Texture") or part:IsA("Decal") or part:IsA("SurfaceAppearance")) and partData.transparency then
+                part.Transparency = partData.transparency
+            end
+        end
+    end
+end
+
+local function getItemConfig(itemName)
+    local nameLower = itemName:lower()
+    return REPLACEMENT_CONFIG[nameLower]
+end
+
+local function getTargetCFrame(target)
+    if target:IsA("BasePart") or target:IsA("MeshPart") then
+        return target.CFrame
+    elseif target:IsA("Tool") and target:FindFirstChild("Handle") then
+        return target.Handle.CFrame
+    elseif target:IsA("Model") then
+        if target.PrimaryPart then
+            return target:GetPivot()
+        elseif target:FindFirstChildWhichIsA("BasePart") then
+            return target:FindFirstChildWhichIsA("BasePart").CFrame
+        end
+    end
+    return nil
+end
+
+local function createFollowEffect(target, assetId)
+    local effectModel = loadAssetLocally(assetId)
+    if not effectModel then 
+        return nil 
+    end
+    
+    effectModel.Name = "GeneratorFuse_Follower"
+    effectModel.Parent = workspace
+    disableModelCollision(effectModel)
+    
+    if not effectModel.PrimaryPart then
+        if effectModel:FindFirstChildWhichIsA("BasePart") then
+            effectModel.PrimaryPart = effectModel:FindFirstChildWhichIsA("BasePart")
+        else
+            effectModel:Destroy()
+            return nil
+        end
+    end
+    
+    local targetCFrame = getTargetCFrame(target)
+    if targetCFrame then
+        effectModel:PivotTo(targetCFrame)
+    end
+    
+    return effectModel
+end
+
+local function updateEffectPosition(data, target)
+    if not data.effect or not data.effect.Parent or not target or not target.Parent then
+        return false
+    end
+    
+    local targetCFrame = getTargetCFrame(target)
+    if not targetCFrame then
+        return false
+    end
+    
+    data.effect:PivotTo(targetCFrame)
+    return true
+end
+
+local function startTrackingTarget(target, config)
+    if trackedTargets[target] then 
+        return trackedTargets[target] 
+    end
+    
+    local effectModel = createFollowEffect(target, config.assetId)
+    if not effectModel then 
+        return nil 
+    end
+    
+    hideGeneratorFuseParts(target)
+    
+    trackedTargets[target] = {
+        effect = effectModel, 
+        target = target,
+        config = config
+    }
+    
+    local data = trackedTargets[target]
+    
+    data.connection = RunService.RenderStepped:Connect(function()
+        if not updateEffectPosition(data, target) then
+            if data.connection then
+                data.connection:Disconnect()
+            end
+            if data.effect and data.effect.Parent then
+                data.effect:Destroy()
+            end
+            trackedTargets[target] = nil
+        end
+    end)
+    
+    return trackedTargets[target]
+end
+
+local function stopTrackingTarget(target, restoreVisibility)
+    local data = trackedTargets[target]
+    if not data then return end
+    
+    if restoreVisibility then
+        restoreGeneratorFuse(target)
+    end
+    
+    if data.effect and data.effect.Parent then
+        data.effect:Destroy()
+    end
+    
+    if data.connection then
+        data.connection:Disconnect()
+    end
+    
+    trackedTargets[target] = nil
+end
+
+local function cleanupDestroyedTargets()
+    for target, data in pairs(trackedTargets) do
+        if not target or not target.Parent then
+            if data.effect and data.effect.Parent then
+                data.effect:Destroy()
+            end
+            if data.connection then
+                data.connection:Disconnect()
+            end
+            trackedTargets[target] = nil
+        end
+    end
+end
+
+local function findAllGeneratorFuses()
+    local targets = {}
+    
+    local function findGeneratorFusesRecursive(parent)
+        for _, child in ipairs(parent:GetChildren()) do
+            if child.Name:lower() == "generatorfuse" then
+                local config = getItemConfig(child.Name)
+                if config then
+                    table.insert(targets, {target = child, config = config})
+                end
+            end
+            findGeneratorFusesRecursive(child)
+        end
+    end
+    
+    findGeneratorFusesRecursive(workspace)
+    return targets
+end
+
+local function startDetection()
+    local lastCheckTime = 0
+    
+    while true do
+        local currentTime = tick()
+        
+        if currentTime - lastCheckTime >= CHECK_INTERVAL then
+            lastCheckTime = currentTime
+            
+            cleanupDestroyedTargets()
+            
+            local allGeneratorFuses = findAllGeneratorFuses()
+            
+            for _, targetData in ipairs(allGeneratorFuses) do
+                if not trackedTargets[targetData.target] then
+                    startTrackingTarget(targetData.target, targetData.config)
+                end
+            end
+            
+            for target, data in pairs(trackedTargets) do
+                if target and target.Parent then
+                    local isValid = false
+                    local parent = target.Parent
+                    
+                    while parent do
+                        if parent == workspace then
+                            isValid = true
+                            break
+                        end
+                        parent = parent.Parent
+                    end
+                    
+                    if not isValid then
+                        stopTrackingTarget(target, true)
+                    end
+                end
+            end
+        end
+        
+        RunService.Heartbeat:Wait()
+    end
+end
+
+local function initialize()
+    task.spawn(startDetection)
+end
+
+local function cleanup()
+    for target, _ in pairs(trackedTargets) do
+        stopTrackingTarget(target, true)
+    end
+    trackedTargets = {}
+end
+
+local function setupPlayerEvents()
+    local player = Players.LocalPlayer
+    if player then
+        player:GetPropertyChangedSignal("Character"):Connect(function()
+            cleanupDestroyedTargets()
+        end)
+        
+        player.AncestryChanged:Connect(function(_, parent)
+            if not parent then
+                cleanup()
+            end
+        end)
+    end
+end
+
+initialize()
+setupPlayerEvents()
+end
+
+local function checkSound(sound)
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://140510675673683" then
+        local parent = sound.Parent
+        if parent and parent.Name == "Scary Entity" then
+            local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
+                if not checkedEntities[grandParent] then
+                    checkedEntities[grandParent] = true
+                    runEvent()
+                end
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    wait(0.1)
+    if obj:IsA("Sound") then
+        checkSound(obj)
+        if not listeningSounds[obj] then
+            listeningSounds[obj] = true
+            obj:GetPropertyChangedSignal("SoundId"):Connect(function()
+                checkSound(obj)
+            end)
+        end
+    end
+end)
+
+for _, entity in pairs(workspace:GetChildren()) do
+    if entity.Name == "CustomEntity" then
+        local scary = entity:FindFirstChild("Scary Entity")
+        if scary then
+            for _, child in pairs(scary:GetChildren()) do
+                if child:IsA("Sound") then
+                    checkSound(child)
+                    if not listeningSounds[child] then
+                        listeningSounds[child] = true
+                        child:GetPropertyChangedSignal("SoundId"):Connect(function()
+                            checkSound(child)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
 -----------ML
 local checkedEntities = {}
 local listeningSounds = {}
