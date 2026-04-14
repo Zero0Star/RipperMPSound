@@ -1,3 +1,58 @@
+local RunService = game:GetService("RunService")
+local items = {
+    "HardcoreOne",
+    "HardcoreTwo", 
+    "HardcoreITEM",
+    "HardcoremUSIC"
+}
+local found = {}
+local connection = nil
+local isDone = false
+local lastCount = 0 
+local function updateProgress()
+    local count = 0
+    for _, name in ipairs(items) do
+        if found[name] then
+            count = count + 1
+        end
+    end
+
+    if count ~= lastCount then
+        lastCount = count
+        
+        pcall(function()
+            require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
+                .caption("HardCore Loading: " .. count .. "/4", true)
+        end)
+        
+        if count == 4 then
+            isDone = true
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            
+            pcall(function()
+                require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
+                    .caption("HardCore is all loaded!", true)
+            end)
+        end
+    end
+end
+
+connection = RunService.Heartbeat:Connect(function()
+    for _, name in ipairs(items) do
+        if not found[name] then
+            local item = workspace:FindFirstChild(name)
+            if item and item:IsA("BoolValue") then
+                found[name] = true
+                updateProgress()
+            end
+        end
+    end
+end)
+
+updateProgress()
 
 local v1 = Instance.new("ScreenGui")
 v1.Name = "TechWindow"
