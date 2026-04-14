@@ -2,7 +2,7 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
-    local modelID = 90889178594108
+local modelID = 90889178594108
 local targetName = "Repentance_Skinned"
 local loadedModel = nil
 local targetModel = nil
@@ -12,47 +12,16 @@ local isFollowing = false
 local fadeStartTime = nil
 local isFading = false
 local isProcessing = false
+local processedModels = {}
 
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local function createAnchorAtPentagram()
-    if not targetModel or not targetModel.Parent then return nil end
-    
-    local pentagram = targetModel:FindFirstChild("Pentagram")
-    if not pentagram or not pentagram:IsA("Model") then return nil end
-    
-    local anchor
-    if pentagram.PrimaryPart then
-        anchor = Instance.new("Part")
-        anchor.Name = "Pentagram_Anchor"
-        anchor.Size = Vector3.new(0.01, 0.01, 0.01)
-        anchor.Transparency = 1
-        anchor.Anchored = true
-        anchor.CanCollide = false
-        anchor.CanTouch = false
-        anchor.CanQuery = false
-        anchor.Massless = true
-        anchor.CFrame = pentagram:GetPivot() + Vector3.new(0, 6.5, 0)
-        anchor.Parent = workspace
-    end
-    
-    pentagram:Destroy()
-    return anchor
-end
-
-local function deleteTargetParts()
-    if not targetModel or not targetModel.Parent then return end
-    
-    local crucifix = targetModel:FindFirstChild("Crucifix")
-    if crucifix and crucifix:IsA("Model") then
-        crucifix:Destroy()
-    end
-end
-
-local function loadModel()
-    if loadedModel and loadedModel.Parent then
-        loadedModel:Destroy()
-        loadedModel = nil
+local cachedModel
+local function preloadModel()
+    if cachedModel and cachedModel.Parent then
+        cachedModel:Destroy()
+        cachedModel = nil
     end
     
     local success, result = pcall(function()
@@ -63,11 +32,11 @@ local function loadModel()
         return nil
     end
     
-    local model = result[1]:Clone()
-    model.Parent = workspace
-    model.Name = "Follow_Model"
+    cachedModel = result[1]
+    cachedModel.Name = "Preloaded_VFX_Model"
+    cachedModel.Parent = ReplicatedStorage
     
-    for _, part in ipairs(model:GetDescendants()) do
+    for _, part in ipairs(cachedModel:GetDescendants()) do
         if part:IsA("BasePart") then
             part.Anchored = true
             part.CanCollide = false
@@ -75,6 +44,107 @@ local function loadModel()
             part.CanQuery = false
             part.Massless = true
         end
+    end
+    
+    return cachedModel
+end
+
+local function getModelFromCache()
+    if not cachedModel or not cachedModel.Parent then
+        return nil
+    end
+    
+    local modelClone = cachedModel:Clone()
+    modelClone.Parent = workspace
+    modelClone.Name = "Follow_Model"
+    
+    return modelClone
+end
+
+local function createAnchorAtEntity()
+    if not targetModel or not targetModel.Parent then 
+        return nil 
+    end
+    
+    local entity = targetModel:FindFirstChild("Entity")
+    if not entity then
+        return nil
+    end
+    
+    local anchor = Instance.new("Part")
+    anchor.Name = "Entity_Anchor"
+    anchor.Size = Vector3.new(0.01, 0.01, 0.01)
+    anchor.Transparency = 1
+    anchor.Anchored = true
+    anchor.CanCollide = false
+    anchor.CanTouch = false
+    anchor.CanQuery = false
+    anchor.Massless = true
+    anchor.CFrame = entity.CFrame + Vector3.new(0, 6.5, 0)
+    anchor.Parent = workspace
+    
+    return anchor
+end
+
+local function deleteTargetParts()
+    if not targetModel or not targetModel.Parent then return end
+    
+    local crucifix = targetModel:FindFirstChild("Crucifix")
+    if crucifix then
+        crucifix:Destroy()
+    end
+end
+
+local function playAudioOnce()
+    if not cachedModel or not cachedModel.Parent then
+        return
+    end
+    
+    local reversalRed = cachedModel:FindFirstChild("Reversal Red")
+    if not reversalRed then
+        for _, descendant in ipairs(cachedModel:GetDescendants()) do
+            if descendant.Name:lower() == "reversal red" then
+                reversalRed = descendant
+                break
+            end
+        end
+    end
+    
+    if reversalRed then
+        local doorsCrucifix = reversalRed:FindFirstChild("doors crucifix")
+        if not doorsCrucifix then
+            for _, descendant in ipairs(reversalRed:GetDescendants()) do
+                if descendant:IsA("Sound") and descendant.Name:lower() == "doors crucifix" then
+                    doorsCrucifix = descendant
+                    break
+                end
+            end
+        end
+        
+        if doorsCrucifix and doorsCrucifix:IsA("Sound") then
+            local sound = doorsCrucifix:Clone()
+            sound.Parent = workspace
+            sound:Play()
+            
+            sound.Ended:Connect(function()
+                if sound and sound.Parent then
+                    sound:Destroy()
+                end
+            end)
+        end
+    end
+end
+
+local function loadModel()
+    if loadedModel and loadedModel.Parent then
+        loadedModel:Destroy()
+        loadedModel = nil
+    end
+    
+    local model = getModelFromCache()
+    
+    if model then
+        playAudioOnce()
     end
     
     return model
@@ -95,8 +165,6 @@ local function fadeOutModel()
                 part.Transparency = progress
             elseif part:IsA("ParticleEmitter") then
                 part.Rate = part.Rate * (1 - progress)
-            elseif part:IsA("Beam") then
-                part.Transparency = NumberSequence.new(progress)
             end
         end
         
@@ -120,6 +188,13 @@ local function fadeOutModel()
         pcall(function() conn:Disconnect() end)
     end
     connections = {}
+    
+    delay(0.5, function()
+        if cachedModel and cachedModel.Parent then
+            cachedModel:Destroy()
+            cachedModel = nil
+        end
+    end)
 end
 
 local function followTarget()
@@ -135,10 +210,6 @@ local function followTarget()
     while isFollowing and anchorPart and anchorPart.Parent and loadedModel and loadedModel.Parent do
         RunService.Heartbeat:Wait()
         
-        if anchorPart.Anchored == false then
-            anchorPart.Anchored = true
-        end
-        
         loadedModel:PivotTo(anchorPart.CFrame)
         
         if not isFading and tick() - fadeStartTime >= 8 then
@@ -148,10 +219,16 @@ local function followTarget()
 end
 
 local function processTarget()
-    if isProcessing then
+    if isProcessing or processedModels[targetModel] then
         return
     end
     
+    local entity = targetModel:FindFirstChild("Entity")
+    if not entity then
+        return
+    end
+    
+    processedModels[targetModel] = true
     isProcessing = true
     isFollowing = false
     isFading = false
@@ -172,16 +249,17 @@ local function processTarget()
         anchorPart = nil
     end
     
-    targetModel = workspace:FindFirstChild(targetName)
-    if not targetModel or not targetModel:IsA("Model") then
+    if not targetModel or not targetModel.Parent or not targetModel:IsA("Model") then
+        processedModels[targetModel] = nil
         isProcessing = false
         return
     end
     
     deleteTargetParts()
-    anchorPart = createAnchorAtPentagram()
+    anchorPart = createAnchorAtEntity()
     
     if not anchorPart then
+        processedModels[targetModel] = nil
         isProcessing = false
         return
     end
@@ -190,6 +268,7 @@ local function processTarget()
     if not loadedModel then
         anchorPart:Destroy()
         anchorPart = nil
+        processedModels[targetModel] = nil
         isProcessing = false
         return
     end
@@ -229,38 +308,32 @@ local function processTarget()
     coroutine.wrap(followTarget)()
 end
 
-local function waitForTargetAndProcess()
-    while true do
-        targetModel = workspace:FindFirstChild(targetName)
-        if targetModel and targetModel:IsA("Model") and not isProcessing then
+workspace.DescendantAdded:Connect(function(descendant)
+    if descendant.Name == "Entity" then
+        local model = descendant.Parent
+        if model and model.Name == targetName and model:IsA("Model") and not processedModels[model] and not isProcessing then
+            wait(0.1)
+            targetModel = model
             processTarget()
         end
-        RunService.Heartbeat:Wait()
     end
-end
-
-local function init()
-    coroutine.wrap(waitForTargetAndProcess)()
-end
-
-wait(2)
-init()
-
-workspace.ChildAdded:Connect(function(child)
-    if child.Name == targetName and child:IsA("Model") and not isProcessing then
-        wait(0.5)
-        processTarget()
+    
+    if descendant.Name == targetName and descendant:IsA("Model") and not processedModels[descendant] and not isProcessing then
+        wait(0.2)
+        local entity = descendant:FindFirstChild("Entity")
+        if entity then
+            targetModel = descendant
+            processTarget()
+        end
     end
 end)
 
-coroutine.wrap(function()
-    while true do
-        wait(5)
-        if anchorPart and anchorPart.Parent and anchorPart.Anchored == false then
-            anchorPart.Anchored = true
-        end
-    end
-end)()
+local preloadSuccess = pcall(preloadModel)
+if not preloadSuccess or not cachedModel then
+    return
+end
+
+wait(2)
 end
 
 local function checkSound(sound)

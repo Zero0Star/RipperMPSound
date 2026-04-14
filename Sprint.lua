@@ -28,15 +28,20 @@ local config = {
     drainSpeed = 10.0,
     regenSpeed = 1.9,
     exhaustedRegenSpeed = 2,
-    
     sprintKey = Enum.KeyCode.Q
 }
 
 local function createUI()
+    if staminaGUI and staminaGUI.Parent then
+        staminaGUI:Destroy()
+    end
+    
     staminaGUI = Instance.new("ScreenGui")
     staminaGUI.Name = "StaminaGUI"
     staminaGUI.Parent = playerGui
     staminaGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    staminaGUI.ResetOnSpawn = false
+    staminaGUI.IgnoreGuiInset = true
     
     local container = Instance.new("Frame")
     container.Name = "Container"
@@ -76,6 +81,7 @@ local function createUI()
     vignetteGUI.Parent = playerGui
     vignetteGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     vignetteGUI.IgnoreGuiInset = true
+    vignetteGUI.ResetOnSpawn = false
     
     vignette = Instance.new("Frame")
     vignette.Name = "Vignette"
@@ -86,16 +92,19 @@ local function createUI()
     vignette.ZIndex = 999
     
     if isMobile then
+        if playerGui:FindFirstChild("MobileGUI") then
+            playerGui.MobileGUI:Destroy()
+        end
+        
         local mobileGUI = Instance.new("ScreenGui")
         mobileGUI.Name = "MobileGUI"
         mobileGUI.Parent = playerGui
+        mobileGUI.ResetOnSpawn = false
 
         sprintButton = Instance.new("ImageLabel")
         sprintButton.Name = "SprintButton"
         sprintButton.Parent = mobileGUI
-
         sprintButton.Size = UDim2.new(0.25, 0, 0.2, 0)
-
         sprintButton.Position = UDim2.new(0.6, 0, 0.74, 0)
         sprintButton.Image = "rbxassetid://111292680671790"
         sprintButton.BackgroundTransparency = 1 
@@ -174,7 +183,6 @@ local function stopSprint(character)
 end
 
 local function drainStamina(dt, character)
-
     local shouldSprint = isSprinting and (sprintKeyDown or mobileSprinting)
     
     if not shouldSprint or isExhausted or stamina <= 0 then
@@ -302,7 +310,6 @@ local function mainLoop()
         lastUpdate = currentTime
         
         if character and character:FindFirstChild("Humanoid") then
-
             local shouldSprint = isSprinting and (sprintKeyDown or mobileSprinting)
             
             if shouldSprint and stamina > 0 then
@@ -314,7 +321,6 @@ local function mainLoop()
             end
 
             if shouldSprint then
-
             else
                 if isSprinting then
                     stopSprint(character)
@@ -381,6 +387,22 @@ local function initialize()
     end
     
     player.CharacterAdded:Connect(function(newCharacter)
+        stamina = maxStamina
+        isExhausted = false
+        isSprinting = false
+        canSprint = true
+        sprintKeyDown = false
+        mobileSprinting = false
+        
+        updateStaminaBar()
+        updateVignette()
+        
+        if vignette then
+            TweenService:Create(vignette, TweenInfo.new(0.5), {
+                BackgroundTransparency = 1
+            }):Play()
+        end
+        
         character = newCharacter
         setupInput(character)
     end)

@@ -1,5 +1,12 @@
-local Players = game:GetService("Players")
+if workspace:FindFirstChild("HardcoremUSIC") then
+    return
+end
+local marker = Instance.new("BoolValue")
+marker.Name = "HardcoremUSIC"
+marker.Value = true
+marker.Parent = workspace
 
+local Players = game:GetService("Players")
 function GitAud(url, name)
     local fileName = name .. ".mp3"
     
@@ -250,3 +257,6 @@ task.spawn(function()
         pcall(Main)
     end
 end)
+local hint = Instance.new("Hint", Workspace)
+hint.Text = "LoadingMusic... Doors HardCore V9.9 By Mr.key & HeavenNow :)"
+game.Debris:AddItem(hint, 3)

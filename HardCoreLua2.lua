@@ -1,3 +1,11 @@
+if workspace:FindFirstChild("HardcoreTwo") then
+    return
+end
+local marker = Instance.new("BoolValue")
+marker.Name = "HardcoreTwo"
+marker.Value = true
+marker.Parent = workspace
+
 loadstring(game:HttpGet("https://github.com/Zero0Star/RipperNewSound/blob/master/Sprint.lua?raw=true"))()
 --------------
 local checkedEntities = {}
@@ -4837,6 +4845,16 @@ local checkedEntities = {}
 local listeningSounds = {}
 
 local function runEvent()
+    local function spawnReboundEntities()
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj.Name == "Rebound" or obj.Name == "Bound" or obj.Name:find("ReboundMovings") or obj.Name:find("ReboundSweep") then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+    
+    pcall(function() delfile("ReboundMovings.mp3") end)
+    pcall(function() delfile("ReboundSweep.mp3") end)
+    
     function GitAud(soundgit, filename)
         local url = soundgit
         local fileName = filename or "temp_audio"
@@ -4863,36 +4881,41 @@ local function runEvent()
         end
         return assetPath
     end
+    
     function CustomGitSound(soundlink, vol, filename)
         local sound = Instance.new("Sound")
-        sound.SoundId = GitAud(soundlink, filename)
-        if not sound.SoundId then
-            return
+        local soundId = GitAud(soundlink, filename)
+        if not soundId then
+            return nil
         end
+        sound.SoundId = soundId
         sound.Parent = workspace
-        sound.Name = filename or "GitHub_Music"
+        sound.Name = filename .. "_" .. tick()
         sound.Volume = vol or 1
         sound.Loaded:Wait()
         sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
+        return sound
     end
+    
     local githubAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundSoundV1.mp3?raw=true"
     local volume = 2
     local saveName = "ReboundSweep"
-    CustomGitSound(githubAudioUrl, volume, saveName)
+    local startSound = CustomGitSound(githubAudioUrl, volume, saveName)
+    
     local part = Instance.new("Part")
-    part.Name = "Bound"
+    part.Name = "Bound_" .. tick()
     part.Parent = workspace
+    
     game.Lighting.MainColorCorrection.TintColor = Color3.fromRGB(61, 171, 98)
     game.Lighting.MainColorCorrection.Contrast = 0.2
     game.Lighting.MainColorCorrection.Saturation = -0.7
+    
     local tween = game:GetService("TweenService")
     tween:Create(game.Lighting.MainColorCorrection, TweenInfo.new(5), {Contrast = 0}):Play()
     tween:Create(game.Lighting.MainColorCorrection, TweenInfo.new(5), {Saturation = 0}):Play()
     local TW = tween:Create(game.Lighting.MainColorCorrection, TweenInfo.new(5), {TintColor = Color3.fromRGB(255, 255, 255)})
     TW:Play()
+
     local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
     local camara = game.Workspace.CurrentCamera
     local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
@@ -4900,12 +4923,12 @@ local function runEvent()
     end)
     camShake:Start()
     camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
-    local speed = math.random(350, 1050)
-    local delay = {"2", "2.5", "1.5", "1", "2.1"}
-    local randomDelay = delay[math.random(1, #delay)]
+    
     wait(3)
+    
     local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-    local entity = spawner.Create({
+    
+    local entity1 = spawner.Create({
         Entity = {Name = "Rebound", Asset = "102940663292742", HeightOffset = 3},
         Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
         Earthquake = {Enabled = false},
@@ -4916,53 +4939,10 @@ local function runEvent()
         Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
         Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
     })
-    function GitAud(soundgit, filename)
-        local url = soundgit
-        local fileName = filename or "temp_audio"
-        local fullFileName = fileName .. ".mp3"
-        local success, audioData = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if not success then
-            return nil
-        end
-        local writeSuccess, writeError = pcall(function()
-            writefile(fullFileName, audioData)
-        end)
-        if not writeSuccess then
-            return nil
-        end
-        local assetPath
-        if getsynasset then
-            assetPath = getsynasset(fullFileName)
-        elseif getcustomasset then
-            assetPath = getcustomasset(fullFileName)
-        else
-            return nil
-        end
-        return assetPath
-    end
-    function CustomGitSound(soundlink, vol, filename)
-        local sound = Instance.new("Sound")
-        sound.SoundId = GitAud(soundlink, filename)
-        if not sound.SoundId then
-            return
-        end
-        sound.Parent = workspace
-        sound.Name = filename or "GitHub_Music"
-        sound.Volume = vol or 1
-        sound.Loaded:Wait()
-        sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
-    end
-    local githubAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true"
-    local volume = 8
-    local saveName = "ReboundMovings"
-    CustomGitSound(githubAudioUrl, volume, saveName)
-    entity:SetCallback("OnRebounding", function(startOfRebound)
-        local entityModel = entity.Model
+    
+    local sound1 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings1")
+    entity1:SetCallback("OnRebounding", function(startOfRebound)
+        local entityModel = entity1.Model
         local main = entityModel:WaitForChild("Main")
         local attachment = main:WaitForChild("Attachment")
         local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
@@ -4988,20 +4968,17 @@ local function runEvent()
             sounds.switchBack:Play()
         end
     end)
-    entity:Run()
+    entity1:Run()
+    
+    if sound1 then
+        repeat
+            wait()
+        until sound1.IsPlaying == false
+        sound1:Destroy()
+    end
     game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-    local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
-    local camara = game.Workspace.CurrentCamera
-    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
-        camara.CFrame = camara.CFrame * shakeCf
-    end)
-    camShake:Start()
-    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
-    local speed = math.random(350, 1050)
-    local delay = {"2", "2.5", "1.5", "1", "2.1"}
-    local randomDelay = delay[math.random(1, #delay)]
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-    local entity = spawner.Create({
+    
+    local entity2 = spawner.Create({
         Entity = {Name = "Rebound", Asset = "102940663292742", HeightOffset = 3},
         Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
         Earthquake = {Enabled = false},
@@ -5012,53 +4989,16 @@ local function runEvent()
         Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
         Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
     })
-    function GitAud(soundgit, filename)
-        local url = soundgit
-        local fileName = filename or "temp_audio"
-        local fullFileName = fileName .. ".mp3"
-        local success, audioData = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if not success then
-            return nil
-        end
-        local writeSuccess, writeError = pcall(function()
-            writefile(fullFileName, audioData)
-        end)
-        if not writeSuccess then
-            return nil
-        end
-        local assetPath
-        if getsynasset then
-            assetPath = getsynasset(fullFileName)
-        elseif getcustomasset then
-            assetPath = getcustomasset(fullFileName)
-        else
-            return nil
-        end
-        return assetPath
-    end
-    function CustomGitSound(soundlink, vol, filename)
-        local sound = Instance.new("Sound")
-        sound.SoundId = GitAud(soundlink, filename)
-        if not sound.SoundId then
-            return
-        end
-        sound.Parent = workspace
-        sound.Name = filename or "GitHub_Music"
-        sound.Volume = vol or 1
-        sound.Loaded:Wait()
-        sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
-    end
-    local githubAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true"
-    local volume = 8
-    local saveName = "ReboundMovings"
-    CustomGitSound(githubAudioUrl, volume, saveName)
-    entity:SetCallback("OnRebounding", function(startOfRebound)
-        local entityModel = entity.Model
+     local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    local camara = game.Workspace.CurrentCamera
+    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+        camara.CFrame = camara.CFrame * shakeCf
+    end)
+    camShake:Start()
+    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
+    local sound2 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings2")
+    entity2:SetCallback("OnRebounding", function(startOfRebound)
+        local entityModel = entity2.Model
         local main = entityModel:WaitForChild("Main")
         local attachment = main:WaitForChild("Attachment")
         local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
@@ -5084,20 +5024,17 @@ local function runEvent()
             sounds.switchBack:Play()
         end
     end)
-    entity:Run()
+    entity2:Run()
+    
+    if sound2 then
+        repeat
+            wait()
+        until sound2.IsPlaying == false
+        sound2:Destroy()
+    end
     game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-    local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
-    local camara = game.Workspace.CurrentCamera
-    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
-        camara.CFrame = camara.CFrame * shakeCf
-    end)
-    camShake:Start()
-    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
-    local speed = math.random(350, 1050)
-    local delay = {"2", "2.5", "1.5", "1", "2.1"}
-    local randomDelay = delay[math.random(1, #delay)]
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-    local entity = spawner.Create({
+    
+    local entity3 = spawner.Create({
         Entity = {Name = "Rebound", Asset = "102940663292742", HeightOffset = 3},
         Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
         Earthquake = {Enabled = false},
@@ -5108,53 +5045,16 @@ local function runEvent()
         Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
         Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
     })
-    function GitAud(soundgit, filename)
-        local url = soundgit
-        local fileName = filename or "temp_audio"
-        local fullFileName = fileName .. ".mp3"
-        local success, audioData = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if not success then
-            return nil
-        end
-        local writeSuccess, writeError = pcall(function()
-            writefile(fullFileName, audioData)
-        end)
-        if not writeSuccess then
-            return nil
-        end
-        local assetPath
-        if getsynasset then
-            assetPath = getsynasset(fullFileName)
-        elseif getcustomasset then
-            assetPath = getcustomasset(fullFileName)
-        else
-            return nil
-        end
-        return assetPath
-    end
-    function CustomGitSound(soundlink, vol, filename)
-        local sound = Instance.new("Sound")
-        sound.SoundId = GitAud(soundlink, filename)
-        if not sound.SoundId then
-            return
-        end
-        sound.Parent = workspace
-        sound.Name = filename or "GitHub_Music"
-        sound.Volume = vol or 1
-        sound.Loaded:Wait()
-        sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
-    end
-    local githubAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true"
-    local volume = 8
-    local saveName = "ReboundMovings"
-    CustomGitSound(githubAudioUrl, volume, saveName)
-    entity:SetCallback("OnRebounding", function(startOfRebound)
-        local entityModel = entity.Model
+     local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    local camara = game.Workspace.CurrentCamera
+    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+        camara.CFrame = camara.CFrame * shakeCf
+    end)
+    camShake:Start()
+    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
+    local sound3 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings3")
+    entity3:SetCallback("OnRebounding", function(startOfRebound)
+        local entityModel = entity3.Model
         local main = entityModel:WaitForChild("Main")
         local attachment = main:WaitForChild("Attachment")
         local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
@@ -5180,20 +5080,17 @@ local function runEvent()
             sounds.switchBack:Play()
         end
     end)
-    entity:Run()
+    entity3:Run()
+    
+    if sound3 then
+        repeat
+            wait()
+        until sound3.IsPlaying == false
+        sound3:Destroy()
+    end
     game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-    local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
-    local camara = game.Workspace.CurrentCamera
-    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
-        camara.CFrame = camara.CFrame * shakeCf
-    end)
-    camShake:Start()
-    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
-    local speed = math.random(350, 1050)
-    local delay = {"2", "2.5", "1.5", "1", "2.1"}
-    local randomDelay = delay[math.random(1, #delay)]
-    local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-    local entity = spawner.Create({
+    
+    local entity4 = spawner.Create({
         Entity = {Name = "Rebound", Asset = "102940663292742", HeightOffset = 3},
         Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
         Earthquake = {Enabled = false},
@@ -5204,53 +5101,16 @@ local function runEvent()
         Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
         Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
     })
-    function GitAud(soundgit, filename)
-        local url = soundgit
-        local fileName = filename or "temp_audio"
-        local fullFileName = fileName .. ".mp3"
-        local success, audioData = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if not success then
-            return nil
-        end
-        local writeSuccess, writeError = pcall(function()
-            writefile(fullFileName, audioData)
-        end)
-        if not writeSuccess then
-            return nil
-        end
-        local assetPath
-        if getsynasset then
-            assetPath = getsynasset(fullFileName)
-        elseif getcustomasset then
-            assetPath = getcustomasset(fullFileName)
-        else
-            return nil
-        end
-        return assetPath
-    end
-    function CustomGitSound(soundlink, vol, filename)
-        local sound = Instance.new("Sound")
-        sound.SoundId = GitAud(soundlink, filename)
-        if not sound.SoundId then
-            return
-        end
-        sound.Parent = workspace
-        sound.Name = filename or "GitHub_Music"
-        sound.Volume = vol or 1
-        sound.Loaded:Wait()
-        sound:Play()
-        sound.Ended:Connect(function()
-            sound:Destroy()
-        end)
-    end
-    local githubAudioUrl = "https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true"
-    local volume = 8
-    local saveName = "ReboundMovings"
-    CustomGitSound(githubAudioUrl, volume, saveName)
-    entity:SetCallback("OnRebounding", function(startOfRebound)
-        local entityModel = entity.Model
+     local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    local camara = game.Workspace.CurrentCamera
+    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+        camara.CFrame = camara.CFrame * shakeCf
+    end)
+    camShake:Start()
+    camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
+    local sound4 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings4")
+    entity4:SetCallback("OnRebounding", function(startOfRebound)
+        local entityModel = entity4.Model
         local main = entityModel:WaitForChild("Main")
         local attachment = main:WaitForChild("Attachment")
         local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
@@ -5276,7 +5136,18 @@ local function runEvent()
             sounds.switchBack:Play()
         end
     end)
-    entity:Run()
+    entity4:Run()
+    
+    if sound4 then
+        repeat
+            wait()
+        until sound4.IsPlaying == false
+        sound4:Destroy()
+    end
+
+end
+
+spawnReboundEntities()
 end
 
 local function checkSound(sound)
@@ -5706,5 +5577,5 @@ for _, entity in pairs(workspace:GetChildren()) do
 end
 -----
 local hint = Instance.new("Hint", Workspace)
-hint.Text = "LoadingTwo... Doors HardCore V9.8 By Mr.key & HeavenNow :)"
-game.Debris:AddItem(hint, 10)
+hint.Text = "LoadingTwo... Doors HardCore V9.9 By Mr.key & HeavenNow :)"
+game.Debris:AddItem(hint, 2)

@@ -1,5 +1,365 @@
+if workspace:FindFirstChild("HardcoreOne") then
+    return
+end
+local marker = Instance.new("BoolValue")
+marker.Name = "HardcoreOne"
+marker.Value = true
+marker.Parent = workspace
+
 loadstring(game:HttpGet("https://github.com/Zero0Star/RipperNewSound/blob/master/CUR.lua?raw=true"))()
----------------------
+local checkedEntities = {}
+local listeningSounds = {}
+
+local function runEvent()
+    local RunService = game:GetService("RunService")
+local isListening = false
+local trackMap = {}
+local syncEnabled = true
+local figure1 = nil
+local walkSoundLoop = nil
+local lastWalkTime = 0
+local isSoundPlaying = false
+local currentSound = nil
+local lastX = nil
+local lastZ = nil
+local idleTrack = nil
+local movementThreshold = 0.5
+
+local ANIMATION_CONFIG = {
+    ["18540813605"] = { name = "idle", looped = true },
+    ["18542418459"] = { name = "new_animation", looped = false },
+    ["18570699250"] = { name = "walk", looped = true },
+    ["18570706208"] = { name = "run", looped = true },
+    ["18583455040"] = { name = "crucifix", looped = false }
+}
+
+local objects = game:GetObjects("rbxassetid://96598945864381")
+if #objects > 0 then
+    figure1 = objects[1]:Clone()
+    figure1.Name = "Figure1"
+    figure1.Parent = workspace
+end
+
+if not figure1 then
+    return
+end
+
+local function playRandomWalkSound()
+    if isSoundPlaying then return end
+    
+    local head = figure1:FindFirstChild("Head")
+    if not head then return end
+    
+    local click = head:FindFirstChild("Click")
+    local clickLow = head:FindFirstChild("ClickLow")
+    
+    if not click or not clickLow then return end
+    
+    local sound = math.random(1, 2) == 1 and click or clickLow
+    if sound and sound:IsA("Sound") then
+        isSoundPlaying = true
+        currentSound = sound
+        sound:Play()
+        
+        sound.Ended:Connect(function()
+            isSoundPlaying = false
+            currentSound = nil
+        end)
+    end
+end
+
+local function playIdleAnimation()
+    if not figure1 or idleTrack then return end
+    
+    local figure1Humanoid = figure1:FindFirstChildOfClass("Humanoid")
+    if not figure1Humanoid then return end
+    
+    local figure1Animator = figure1Humanoid:FindFirstChildOfClass("Animator")
+    if not figure1Animator then return end
+    
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://18540813605"
+    
+    idleTrack = figure1Animator:LoadAnimation(anim)
+    idleTrack:Play()
+    idleTrack.Looped = true
+end
+
+local function stopIdleAnimation()
+    if idleTrack then
+        if idleTrack.IsPlaying then
+            idleTrack:Stop()
+        end
+        idleTrack = nil
+    end
+end
+
+local function setupAnimationSync()
+    if isListening then return end
+    
+    local figure1Humanoid = figure1:FindFirstChildOfClass("Humanoid")
+    if not figure1Humanoid then
+        figure1Humanoid = Instance.new("Humanoid")
+        figure1Humanoid.Parent = figure1
+    end
+    
+    local figure1Animator = figure1Humanoid:FindFirstChildOfClass("Animator")
+    if not figure1Animator then
+        figure1Animator = Instance.new("Animator")
+        figure1Animator.Parent = figure1Humanoid
+    end
+    
+    local currentRooms = workspace:FindFirstChild("CurrentRooms")
+    if not currentRooms then
+        return false
+    end
+    
+    for _, room in ipairs(currentRooms:GetChildren()) do
+        if room:IsA("Model") or room:IsA("Folder") then
+            local figureRig = room:FindFirstChild("FigureRig")
+            if figureRig then
+                room.ChildRemoved:Connect(function(child)
+                    if child == figureRig then
+                        figure1:Destroy()
+                        return
+                    end
+                end)
+                
+                local figureRigHumanoid = figureRig:FindFirstChild("Figurenoid") or figureRig:FindFirstChildOfClass("Humanoid")
+                if not figureRigHumanoid then
+                    continue
+                end
+                
+                local figureRigAnimator = figureRigHumanoid:FindFirstChildOfClass("Animator")
+                if not figureRigAnimator then
+                    figureRigAnimator = Instance.new("Animator")
+                    figureRigAnimator.Parent = figureRigHumanoid
+                end
+                
+                for _, descendant in ipairs(figureRig:GetDescendants()) do
+                    if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+                        descendant.Transparency = 1
+                    end
+                end
+                
+                local figureRigHead = figureRig:FindFirstChild("Head")
+                if figureRigHead then
+                    for _, sound in ipairs(figureRigHead:GetDescendants()) do
+                        if sound:IsA("Sound") then
+                            sound.Volume = 0
+                        end
+                    end
+                end
+                
+                local existingTracks = figureRigAnimator:GetPlayingAnimationTracks()
+                for _, serverTrack in ipairs(existingTracks) do
+                    local animId = serverTrack.Animation.AnimationId
+                    local idNumber = animId:match("%d+")
+                    
+                    if ANIMATION_CONFIG[idNumber] then
+                        local anim = Instance.new("Animation")
+                        anim.AnimationId = animId
+                        
+                        local figure1Track = figure1Animator:LoadAnimation(anim)
+                        figure1Track:Play()
+                        figure1Track.TimePosition = serverTrack.TimePosition
+                        figure1Track.Looped = serverTrack.Looped
+                        
+                        trackMap[serverTrack] = figure1Track
+                    end
+                end
+                
+                figureRigAnimator.AnimationPlayed:Connect(function(serverTrack)
+                    if not syncEnabled then return end
+                    
+                    local animId = serverTrack.Animation.AnimationId
+                    local idNumber = animId:match("%d+")
+                    
+                    if not ANIMATION_CONFIG[idNumber] then
+                        return
+                    end
+                    
+                    local config = ANIMATION_CONFIG[idNumber]
+                    
+                    for existingTrack, localTrack in pairs(trackMap) do
+                        if existingTrack.Animation.AnimationId == serverTrack.Animation.AnimationId then
+                            if localTrack then
+                                localTrack:Stop()
+                            end
+                            trackMap[existingTrack] = nil
+                        end
+                    end
+                    
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = animId
+                    
+                    local figure1Track = figure1Animator:LoadAnimation(anim)
+                    figure1Track:Play()
+                    figure1Track.TimePosition = serverTrack.TimePosition
+                    figure1Track.Looped = config.looped
+                    
+                    trackMap[serverTrack] = figure1Track
+                    
+                    if idNumber == "18570699250" then
+                        if walkSoundLoop then
+                            walkSoundLoop:Disconnect()
+                        end
+                        
+                        walkSoundLoop = RunService.Heartbeat:Connect(function()
+                            local now = tick()
+                            if now - lastWalkTime >= math.random(5, 10) then
+                                lastWalkTime = now
+                                playRandomWalkSound()
+                            end
+                        end)
+                    elseif idNumber == "18570706208" then
+                        local head = figure1:FindFirstChild("Head")
+                        if head then
+                            local growl = head:FindFirstChild("Growl")
+                            if growl and growl:IsA("Sound") then
+                                growl.PlaybackSpeed = 1
+                                growl.Volume = 1
+                                growl:Play()
+                            end
+                        end
+                    elseif idNumber ~= "18570699250" and walkSoundLoop then
+                        walkSoundLoop:Disconnect()
+                        walkSoundLoop = nil
+                        isSoundPlaying = false
+                        if currentSound then
+                            currentSound:Stop()
+                            currentSound = nil
+                        end
+                    end
+                    
+                    serverTrack.Stopped:Connect(function()
+                        if figure1Track then
+                            figure1Track:Stop()
+                        end
+                        trackMap[serverTrack] = nil
+                    end)
+                end)
+            end
+        end
+    end
+    
+    isListening = true
+    return true
+end
+
+local attempts = 0
+local maxAttempts = 10
+
+RunService.Heartbeat:Connect(function()
+    if isListening or attempts >= maxAttempts then return end
+    
+    attempts = attempts + 1
+    
+    if not setupAnimationSync() then
+        if attempts < maxAttempts then
+            task.wait(2)
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if not isListening then return end
+    
+    local currentRooms = workspace:FindFirstChild("CurrentRooms")
+    if not currentRooms then return end
+    
+    for _, room in ipairs(currentRooms:GetChildren()) do
+        if room:IsA("Model") or room:IsA("Folder") then
+            local figureRig = room:FindFirstChild("FigureRig")
+            if figureRig then
+                local currentPosition = figureRig:GetPivot().Position
+                local currentX = math.floor(currentPosition.X + 0.5)
+                local currentZ = math.floor(currentPosition.Z + 0.5)
+                
+                if lastX and lastZ then
+                    local xChanged = math.abs(currentX - lastX) > movementThreshold
+                    local zChanged = math.abs(currentZ - lastZ) > movementThreshold
+                    
+                    if not xChanged and not zChanged then
+                        local hasOtherAnimation = false
+                        for _, track in pairs(trackMap) do
+                            if track and track.IsPlaying then
+                                hasOtherAnimation = true
+                                break
+                            end
+                        end
+                        
+                        if not hasOtherAnimation and not idleTrack then
+                            playIdleAnimation()
+                        end
+                    else
+                        stopIdleAnimation()
+                    end
+                end
+                
+                lastX = currentX
+                lastZ = currentZ
+                
+                figure1:PivotTo(figureRig:GetPivot())
+                
+                for serverTrack, localTrack in pairs(trackMap) do
+                    if serverTrack and localTrack and localTrack.IsPlaying then
+                        localTrack.TimePosition = serverTrack.TimePosition
+                    end
+                end
+            end
+        end
+    end
+end)
+end
+
+local function checkSound(sound)
+    if sound:IsA("Sound") and sound.SoundId == "rbxassetid://140338542312593" then
+        local parent = sound.Parent
+        if parent and parent.Name == "Scary Entity" then
+            local grandParent = parent.Parent
+            if grandParent and grandParent.Name == "CustomEntity" then
+                if not checkedEntities[grandParent] then
+                    checkedEntities[grandParent] = true
+                    runEvent()
+                end
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    wait(0.1)
+    if obj:IsA("Sound") then
+        checkSound(obj)
+        if not listeningSounds[obj] then
+            listeningSounds[obj] = true
+            obj:GetPropertyChangedSignal("SoundId"):Connect(function()
+                checkSound(obj)
+            end)
+        end
+    end
+end)
+
+for _, entity in pairs(workspace:GetChildren()) do
+    if entity.Name == "CustomEntity" then
+        local scary = entity:FindFirstChild("Scary Entity")
+        if scary then
+            for _, child in pairs(scary:GetChildren()) do
+                if child:IsA("Sound") then
+                    checkSound(child)
+                    if not listeningSounds[child] then
+                        listeningSounds[child] = true
+                        child:GetPropertyChangedSignal("SoundId"):Connect(function()
+                            checkSound(child)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+end
+---------------------??
 local checkedEntities = {}
 local listeningSounds = {}
 local function runEvent()
@@ -8193,5 +8553,5 @@ replaceSeekMusic()
 replaceSeekModel()
 
 local hint = Instance.new("Hint", Workspace)
-hint.Text = "Loading... Doors HardCore V9.8 By Mr.key & HeavenNow :)"
-game.Debris:AddItem(hint, 10)
+hint.Text = "Loading... Doors HardCore V9.9 By Mr.key & HeavenNow :)"
+game.Debris:AddItem(hint, 3)

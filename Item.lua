@@ -1,3 +1,10 @@
+if workspace:FindFirstChild("HardcoreITEM") then
+    return
+end
+local marker = Instance.new("BoolValue")
+marker.Name = "HardcoreITEM"
+marker.Value = true
+marker.Parent = workspace
 local player = game.Players.LocalPlayer
 local runService = game:GetService("RunService")
 local workspace = game:GetService("Workspace")
@@ -768,5 +775,5 @@ task.spawn(function()
 end)
 -----
 local hint = Instance.new("Hint", Workspace)
-hint.Text = "LoadingItem... Doors HardCore V9.8 By Mr.key & HeavenNow :)"
-game.Debris:AddItem(hint, 5)
+hint.Text = "LoadingItem... Doors HardCore V9.9 By Mr.key & HeavenNow :)"
+game.Debris:AddItem(hint, 3)
