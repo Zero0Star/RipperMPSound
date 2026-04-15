@@ -24,6 +24,59 @@ local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 local dgmusic = "https://github.com/eoyoustme/rebouna/blob/main/HesBehindYouRUN.mp3?raw=true"
 local entityBehaviors = {}
 
+function entityBehaviors.FigureXF()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local function findHeadPart()
+    for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+        local figureRig = room:FindFirstChild("FigureRig")
+        if figureRig and figureRig:IsA("Model") then
+            local head = figureRig:FindFirstChild("Head")
+            if head and head:IsA("MeshPart") then
+                return head
+            end
+        end
+    end
+    return nil
+end
+
+local function attractToHead()
+    local headPart = findHeadPart()
+    if not headPart then return end
+
+    local nearestPlayer
+    local shortestDistance = math.huge
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            local distance = (hrp.Position - headPart.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                nearestPlayer = player
+            end
+        end
+    end
+    
+    if not nearestPlayer then
+
+        return
+    end
+    local hrp = nearestPlayer.Character.HumanoidRootPart
+    local moveSpeed = 0.2
+    local stopDistance = 1
+    while (hrp.Position - headPart.Position).Magnitude > stopDistance do
+        local direction = (headPart.Position - hrp.Position).Unit
+        hrp.CFrame = CFrame.new(hrp.Position + direction * moveSpeed)
+        
+        RunService.Heartbeat:Wait()
+    end
+
+end
+
+attractToHead()
+end
+
 function entityBehaviors.FigureSpawn()
  local RunService = game:GetService("RunService")
 local figure1 = nil
@@ -5673,7 +5726,8 @@ local entityConfig = {
     ["rbxassetid://92260310162120"] = entityBehaviors.MLcur,
     ["rbxassetid://83742851388096"] = entityBehaviors.Bombie,
     ["rbxassetid://8307248039"] = entityBehaviors.Booom,
-    ["rbxassetid://109690961059477"] = entityBehaviors.LightOss,         
+    ["rbxassetid://109690961059477"] = entityBehaviors.LightOss,
+    ["rbxassetid://85554051164113"] = entityBehaviors.FigureXF,         
     ["rbxassetid://135376180128296"] = entityBehaviors.Silence
 }
 local checkedEntities = {}
