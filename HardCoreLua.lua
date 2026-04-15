@@ -5613,7 +5613,7 @@ end
 end
 
 function entityBehaviors.LightOSs()
-    function GetRoom()
+ function GetRoom()
     local gruh = workspace.CurrentRooms
     return gruh:FindFirstChild(game.ReplicatedStorage.GameData.LatestRoom.Value)
 end
@@ -5726,7 +5726,7 @@ local entityConfig = {
     ["rbxassetid://92260310162120"] = entityBehaviors.MLcur,
     ["rbxassetid://83742851388096"] = entityBehaviors.Bombie,
     ["rbxassetid://8307248039"] = entityBehaviors.Booom,
-    ["rbxassetid://109690961059477"] = entityBehaviors.LightOss,
+    ["rbxassetid://109690961059477"] = entityBehaviors.LightOSs,
     ["rbxassetid://85554051164113"] = entityBehaviors.FigureXF,         
     ["rbxassetid://135376180128296"] = entityBehaviors.Silence
 }
