@@ -149,7 +149,7 @@ MB.Position = UDim2.new(0.05, 0, 0.1, 0)
 MB.BackgroundColor3 = Color3.fromRGB(255, 222, 189)
 MB.BackgroundTransparency = 0.1
 MB.AutoButtonColor = true
-MB.Text = "Music"
+MB.Text = "New Mode!!"
 MB.FontFace = CF
 MB.TextColor3 = Color3.fromRGB(80, 60, 40)
 MB.Parent = BC
@@ -229,7 +229,7 @@ local function playAudio()
 end
 
 MB.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://github.com/Zero0Star/RipperNewSound/blob/master/Music.lua?raw=true"))()
+    require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("bbbbbro Im not the production teams donkey... Are u expecting me to make a mode a day? 💀 So please look forward to it 👍",true)
     playAudio()
 end)
 
@@ -240,7 +240,8 @@ PB.MouseButton1Click:Connect(function()
         local scriptUrls = {
             "https://github.com/Zero0Star/RipperNewSound/blob/master/HardCoreLua2.lua?raw=true",
             "https://github.com/Zero0Star/RipperNewSound/blob/master/HardCoreLua.lua?raw=true",
-            "https://github.com/Zero0Star/RipperNewSound/blob/master/Item.lua?raw=true"  -- 将Item放到最后
+            "https://github.com/Zero0Star/RipperNewSound/blob/master/Music.lua?raw=true",
+            "https://github.com/Zero0Star/RipperNewSound/blob/master/Item.lua?raw=true"
         }
         for _, url in ipairs(scriptUrls) do
             if url and url ~= "" then
