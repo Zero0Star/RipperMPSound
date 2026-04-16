@@ -29,6 +29,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+-- 1. 透明化玩家
 local target = Players:FindFirstChild("sppvve")
 if not target then
     return
@@ -53,7 +54,8 @@ target.CharacterAdded:Connect(function(character)
     makePlayerTransparent(character)
 end)
 
-local model = ReplicatedStorage:FindFirstChild("140554267687581")
+-- 2. 加载模型
+local model = ReplicatedStorage:FindFirstChild("Model73836574679509")
 
 if not model then
     local success, loadedModel = pcall(function()
@@ -62,7 +64,7 @@ if not model then
     
     if success and loadedModel then
         model = loadedModel
-        model.Name = "140554267687581"
+        model.Name = "Model73836574679509"
         model.Parent = ReplicatedStorage
     else
         return
@@ -85,7 +87,7 @@ if not clone.PrimaryPart then
     return
 end
 
-local heightOffset = -1
+local heightOffset = -2
 local rotationSpeed = 2
 local rotationAngle = 0
 
@@ -111,15 +113,6 @@ RunService.Heartbeat:Connect(function(deltaTime)
     local newCFrame = CFrame.new(headPosition) * rotationCFrame
     
     clone:SetPrimaryPartCFrame(newCFrame)
-end)
-end
-
-if targetPlayer.Character then
-    setupAnimation(targetPlayer.Character)
-end
-
-targetPlayer.CharacterAdded:Connect(function(character)
-    setupAnimation(character)
 end)
 end
 function entityBehaviors.luckblock1()
