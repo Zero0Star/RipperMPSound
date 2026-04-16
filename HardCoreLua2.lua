@@ -29,7 +29,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local REPLACEMENT_CONFIG = {
-    ["bread"] = {assetId = 116624705319388}
+    ["bread"] = {assetId = 85899528560227}
 }
 
 local CHECK_INTERVAL = 0.3
