@@ -58,7 +58,7 @@ if not clone.PrimaryPart then
     return
 end
 
-local target = game.Players:FindFirstChild("sppvve")
+local target = game.Players:FindFirstChild("Yxi_na")
 local runService = game:GetService("RunService")
 local heightOffset = 2.5
 local rotationSpeed = 500
