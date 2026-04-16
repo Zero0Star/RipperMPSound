@@ -24,12 +24,78 @@ end
 local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local entityBehaviors = {}
 
+function entityBehaviors.DEBUGONE()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local model = ReplicatedStorage:FindFirstChild("Model125779024070718")
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://125779024070718")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "Model125779024070718"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local target = game.Players:FindFirstChild("sppvve")
+local runService = game:GetService("RunService")
+local startCFrame = clone.PrimaryPart.CFrame
+local startRotation = startCFrame - startCFrame.Position
+local heightOffset = 2.5
+
+local connection
+connection = runService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        if target then
+            target.CharacterAdded:Wait()
+        else
+            connection:Disconnect()
+            return
+        end
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        target.Character:WaitForChild("HumanoidRootPart", 5)
+        humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    end
+    
+    if humanoidRootPart then
+        local targetCFrame = humanoidRootPart.CFrame
+        local headPosition = targetCFrame.Position + Vector3.new(0, heightOffset, 0)
+        
+        local newCFrame = CFrame.new(headPosition) * startRotation
+        clone:SetPrimaryPartCFrame(newCFrame)
+    end
+end)
+end
+
 function entityBehaviors.luckblock1()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local REPLACEMENT_CONFIG = {
-    ["bread"] = {assetId = 95260236180615}
+    ["bread"] = {assetId = 91954062878724}
 }
 
 local CHECK_INTERVAL = 0.3
@@ -4990,6 +5056,7 @@ local entityConfig = {
     ["rbxassetid://83225089316779"]  = entityBehaviors.JEFFGUNST,
     ["rbxassetid://14093035297"]  = entityBehaviors.REBOUNDSW,
     ["rbxassetid://138242563639945"]  = entityBehaviors.luckblock1,
+["rbxassetid://139660109011119"]  = entityBehaviors.DEBUGONE,
     ["rbxassetid://139371088930869"]  = entityBehaviors.GUIDINGNEW
 }
 
