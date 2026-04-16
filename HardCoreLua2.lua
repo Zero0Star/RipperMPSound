@@ -26,15 +26,16 @@ local entityBehaviors = {}
 
 function entityBehaviors.DEBUGONE()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local model = ReplicatedStorage:FindFirstChild("137368242086258")
+local model = ReplicatedStorage:FindFirstChild("Model73836574679509")
+
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://137368242086258")[1]
+        return game:GetObjects("rbxassetid://76817589102330")[1]
     end)
     
     if success and loadedModel then
         model = loadedModel
-        model.Name = "137368242086258"
+        model.Name = "Model73836574679509"
         model.Parent = ReplicatedStorage
     else
         return
@@ -59,12 +60,12 @@ end
 
 local target = game.Players:FindFirstChild("sppvve")
 local runService = game:GetService("RunService")
-local startCFrame = clone.PrimaryPart.CFrame
-local startRotation = startCFrame - startCFrame.Position
 local heightOffset = 2.5
+local rotationSpeed = 500
+local rotationAngle = 0
 
 local connection
-connection = runService.Heartbeat:Connect(function()
+connection = runService.Heartbeat:Connect(function(deltaTime)
     if not target or not target.Character then
         if target then
             target.CharacterAdded:Wait()
@@ -81,21 +82,27 @@ connection = runService.Heartbeat:Connect(function()
     end
     
     if humanoidRootPart then
-        local targetCFrame = humanoidRootPart.CFrame
-        local headPosition = targetCFrame.Position + Vector3.new(0, heightOffset, 0)
+        rotationAngle = rotationAngle + (rotationSpeed * deltaTime)
+        if rotationAngle >= 360 then
+            rotationAngle = rotationAngle - 360
+        end
         
-        local newCFrame = CFrame.new(headPosition) * startRotation
+        local targetPosition = humanoidRootPart.Position
+        local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+        
+        local rotationCFrame = CFrame.Angles(0, math.rad(rotationAngle), 0)
+        local newCFrame = CFrame.new(headPosition) * rotationCFrame
+        
         clone:SetPrimaryPartCFrame(newCFrame)
     end
-end)
-end
+end)end
 
 function entityBehaviors.luckblock1()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local REPLACEMENT_CONFIG = {
-    ["bread"] = {assetId = 91954062878724}
+    ["bread"] = {assetId = 138006469303895}
 }
 
 local CHECK_INTERVAL = 0.3
