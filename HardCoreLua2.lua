@@ -25,84 +25,42 @@ local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 local entityBehaviors = {}
 
 function entityBehaviors.DEBUGONE()
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local model = ReplicatedStorage:FindFirstChild("Model73836574679509")
+local Players = game:GetService("Players")
+local targetPlayer = Players:FindFirstChild("sppvve")
 
-if not model then
-    local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://76817589102330")[1]
-    end)
-    
-    if success and loadedModel then
-        model = loadedModel
-        model.Name = "Model73836574679509"
-        model.Parent = ReplicatedStorage
-    else
-        return
-    end
-end
-
-local clone = model:Clone()
-clone.Parent = workspace
-
-if not clone.PrimaryPart then
-    for _, part in pairs(clone:GetDescendants()) do
-        if part:IsA("BasePart") then
-            clone.PrimaryPart = part
-            break
-        end
-    end
-end
-
-if not clone.PrimaryPart then
+if not targetPlayer then
     return
 end
 
-local target = game.Players:FindFirstChild("Yxi_na")
-local runService = game:GetService("RunService")
-local heightOffset = 2.5
-local rotationSpeed = 500
-local rotationAngle = 0
-
-local connection
-connection = runService.Heartbeat:Connect(function(deltaTime)
-    if not target or not target.Character then
-        if target then
-            target.CharacterAdded:Wait()
-        else
-            connection:Disconnect()
-            return
-        end
-    end
+local function setupAnimation(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+    animator.Parent = humanoid
     
-    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then
-        target.Character:WaitForChild("HumanoidRootPart", 5)
-        humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-    end
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://117436459881505"
     
-    if humanoidRootPart then
-        rotationAngle = rotationAngle + (rotationSpeed * deltaTime)
-        if rotationAngle >= 360 then
-            rotationAngle = rotationAngle - 360
-        end
-        
-        local targetPosition = humanoidRootPart.Position
-        local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
-        
-        local rotationCFrame = CFrame.Angles(0, math.rad(rotationAngle), 0)
-        local newCFrame = CFrame.new(headPosition) * rotationCFrame
-        
-        clone:SetPrimaryPartCFrame(newCFrame)
-    end
-end)end
+    local animationTrack = animator:LoadAnimation(animation)
+    animationTrack.Looped = true
+    animationTrack:Play()
+    
+    return animationTrack
+end
 
+if targetPlayer.Character then
+    setupAnimation(targetPlayer.Character)
+end
+
+targetPlayer.CharacterAdded:Connect(function(character)
+    setupAnimation(character)
+end)
+end
 function entityBehaviors.luckblock1()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local REPLACEMENT_CONFIG = {
-    ["bread"] = {assetId = 138006469303895}
+    ["bread"] = {assetId = 136884194076210}
 }
 
 local CHECK_INTERVAL = 0.3
