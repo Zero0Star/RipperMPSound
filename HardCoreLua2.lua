@@ -24,6 +24,670 @@ end
 local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
 local entityBehaviors = {}
 
+function entityBehaviors.bsrebound()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("A_Yun66")
+if not target then
+    return
+end
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("REBOUND?")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://72306540800918")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "REBOUND?"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 0
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
+function entityBehaviors.bsfigure()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local target = Players:FindFirstChild("goat_qiu")
+if not target then
+    return
+end
+
+local walkAnimationId = "rbxassetid://18570699250"
+local idleAnimationId = "rbxassetid://18540813605"
+local walkAnimationTrack = nil
+local idleAnimationTrack = nil
+local isMoving = false
+local lastPosition = nil
+local moveThreshold = 0.013
+
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.62)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("deer")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://12576230222")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "Figurenow"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local mainFigurenow = model:Clone()
+mainFigurenow.Parent = workspace
+
+if not mainFigurenow.PrimaryPart then
+    for _, part in pairs(mainFigurenow:GetDescendants()) do
+        if part:IsA("BasePart") then
+            mainFigurenow.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not mainFigurenow.PrimaryPart then
+    return
+end
+
+local function setupAnimationsInFigurenowHumanoid(parentModel)
+    local humanoid = parentModel:FindFirstChild("Humanoid")
+    if not humanoid then
+        return nil, nil
+    end
+    
+    local animator = humanoid:FindFirstChildWhichIsA("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+    
+    local walkAnimation = Instance.new("Animation")
+    walkAnimation.AnimationId = walkAnimationId
+    local idleAnimation = Instance.new("Animation")
+    idleAnimation.AnimationId = idleAnimationId
+    
+    local walkSuccess, walkTrack = pcall(function()
+        return animator:LoadAnimation(walkAnimation)
+    end)
+    
+    local idleSuccess, idleTrack = pcall(function()
+        return animator:LoadAnimation(idleAnimation)
+    end)
+    
+    if walkSuccess and walkTrack then
+        walkTrack.Looped = true
+    else
+        walkTrack = nil
+    end
+    
+    if idleSuccess and idleTrack then
+        idleTrack.Looped = true
+    else
+        idleTrack = nil
+    end
+    
+    return walkTrack, idleTrack
+end
+
+walkAnimationTrack, idleAnimationTrack = setupAnimationsInFigurenowHumanoid(mainFigurenow)
+
+local heightOffset = 3.5
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local currentPosition = humanoidRootPart.Position
+    if lastPosition then
+        local distance = (currentPosition - lastPosition).Magnitude
+        local nowMoving = distance > moveThreshold
+        
+        if nowMoving and not isMoving then
+            isMoving = true
+            if walkAnimationTrack then
+                walkAnimationTrack:Play()
+            end
+            if idleAnimationTrack then
+                idleAnimationTrack:Stop()
+            end
+        elseif not nowMoving and isMoving then
+            isMoving = false
+            if walkAnimationTrack then
+                walkAnimationTrack:Stop()
+            end
+            if idleAnimationTrack then
+                idleAnimationTrack:Play()
+            end
+        end
+    else
+        if idleAnimationTrack then
+            idleAnimationTrack:Play()
+        end
+    end
+    
+    lastPosition = currentPosition
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    if mainFigurenow.PrimaryPart then
+        mainFigurenow:SetPrimaryPartCFrame(newCFrame)
+    end
+end)
+end
+
+function entityBehaviors.bsripper()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local target = Players:FindFirstChild("sppvve")
+if not target then
+    return
+end
+
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("ripperrr")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://92905715584959")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "ripperrr"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 0
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
+function entityBehaviors.bswhoop()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("sppvve")
+if not target then
+    return
+end
+
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("WHOOP")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://86112457302745")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "WHOOP"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 1
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
+function entityBehaviors.bsdeer()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("woshiniruier")
+if not target then
+    return
+end
+
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("DEERGOD?")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://80363551816014")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "DEERGOD?"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 0
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
+function entityBehaviors.SHOOPTWO()
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local sound = Instance.new("Sound")
+sound.SoundId = "rbxassetid://138148333"
+sound.Name = "WHOOP"
+sound.Parent = workspace
+sound:Play()
+
+local targetModel = workspace:FindFirstChild("WHOOP")
+if not targetModel then return end
+
+if not targetModel.PrimaryPart then
+    local rootPart = targetModel:FindFirstChild("HumanoidRootPart") or targetModel:FindFirstChildWhichIsA("BasePart")
+    if rootPart then targetModel.PrimaryPart = rootPart else return end
+end
+
+local WHOOPModel = Workspace:FindFirstChild("WHOOP")
+if not WHOOPModel then return end
+
+if not WHOOPModel.PrimaryPart then
+    local rootPart = WHOOPModel:FindFirstChild("HumanoidRootPart") or WHOOPModel:FindFirstChildWhichIsA("BasePart")
+    if rootPart then WHOOPModel.PrimaryPart = rootPart else return end
+end
+
+task.wait(1.8)
+
+local laser1Id = 75823189898619
+local laser1Model
+local laser1Success, laser1Result = pcall(function()
+    return game:GetObjects("rbxassetid://" .. laser1Id)[1]
+end)
+if laser1Success and laser1Result and laser1Result:IsA("Model") then
+    laser1Model = laser1Result
+    laser1Model.Name = "Laser1"
+    laser1Model.Parent = workspace
+    if not laser1Model.PrimaryPart then
+        local rootPart = laser1Model:FindFirstChild("HumanoidRootPart") or laser1Model:FindFirstChildWhichIsA("BasePart")
+        if rootPart then laser1Model.PrimaryPart = rootPart end
+    end
+else
+    return
+end
+
+local function hideModel(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+            descendant.Transparency = 1
+        elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+            descendant.Transparency = 1
+        elseif descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+            descendant.Enabled = false
+        end
+    end
+end
+
+local function restoreModelExceptRootPart(model)
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant.Name ~= "HumanoidRootPart" then
+            if descendant:IsA("BasePart") or descendant:IsA("MeshPart") then
+                descendant.Transparency = 0
+            elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                descendant.Transparency = 0
+            elseif descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
+                descendant.Enabled = true
+            end
+        end
+    end
+end
+
+local laser1FollowConnection
+if WHOOPModel and WHOOPModel.PrimaryPart and laser1Model and laser1Model.PrimaryPart then
+    laser1Model:PivotTo(WHOOPModel.PrimaryPart.CFrame)
+    hideModel(targetModel)
+    laser1FollowConnection = RunService.Heartbeat:Connect(function()
+        if not WHOOPModel or not WHOOPModel.PrimaryPart or not laser1Model or not laser1Model.PrimaryPart or 
+           not WHOOPModel.PrimaryPart.Parent or not laser1Model.Parent then
+            if laser1FollowConnection then laser1FollowConnection:Disconnect() end
+            return
+        end
+        laser1Model:PivotTo(WHOOPModel.PrimaryPart.CFrame)
+    end)
+else
+    return
+end
+
+task.wait(1.3)
+
+local laser2Id = 74088823220607
+local laser2Model
+local laser2Success, laser2Result = pcall(function()
+    return game:GetObjects("rbxassetid://" .. laser2Id)[1]
+end)
+if laser2Success and laser2Result and laser2Result:IsA("Model") then
+    laser2Model = laser2Result
+    laser2Model.Name = "Laser2"
+    laser2Model.Parent = workspace
+    if not laser2Model.PrimaryPart then
+        local rootPart = laser2Model:FindFirstChild("HumanoidRootPart") or laser2Model:FindFirstChildWhichIsA("BasePart")
+        if rootPart then laser2Model.PrimaryPart = rootPart end
+    end
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local SHAKE_INTENSITY = 2
+    local SHAKE_DURATION = 10
+    local SHAKE_SPEED = 70
+    local player = Players.LocalPlayer
+    if not player then return end
+    local camera = workspace.CurrentCamera
+    local startTime = tick()
+    local originalPosition = camera.CFrame.Position
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        local elapsed = tick() - startTime
+        if elapsed < SHAKE_DURATION then
+            local decay = 1 - (elapsed / SHAKE_DURATION)
+            local intensity = SHAKE_INTENSITY * decay
+            local time = elapsed * SHAKE_SPEED
+            local offset = Vector3.new(
+                math.sin(time * 1.1) * intensity * 0.5 + math.random(-intensity, intensity) * 0.3,
+                math.cos(time * 0.9) * intensity * 0.5 + math.random(-intensity, intensity) * 0.3,
+                math.sin(time * 1.0) * intensity * 0.3
+            )
+            local lookVector = camera.CFrame.LookVector
+            local upVector = camera.CFrame.UpVector
+            local rightVector = camera.CFrame.RightVector
+            local currentPos = camera.CFrame.Position
+            local newPos = currentPos + offset
+            camera.CFrame = CFrame.new(newPos, newPos + lookVector) * CFrame.Angles(0, 0, 0)
+        else
+            if connection then connection:Disconnect() end
+        end
+    end)
+else
+    return
+end
+
+local laser2FollowConnection
+if WHOOPModel and WHOOPModel.PrimaryPart and laser2Model and laser2Model.PrimaryPart then
+    laser2Model:PivotTo(WHOOPModel.PrimaryPart.CFrame)
+    hideModel(laser1Model)
+    laser2FollowConnection = RunService.Heartbeat:Connect(function()
+        if not WHOOPModel or not WHOOPModel.PrimaryPart or not laser2Model or not laser2Model.PrimaryPart or 
+           not WHOOPModel.PrimaryPart.Parent or not laser2Model.Parent then
+            if laser2FollowConnection then laser2FollowConnection:Disconnect() end
+            return
+        end
+        laser2Model:PivotTo(WHOOPModel.PrimaryPart.CFrame)
+    end)
+else
+    return
+end
+
+local soundFinished = false
+local soundConnection
+soundConnection = sound.Ended:Connect(function()
+    soundFinished = true
+    if soundConnection then soundConnection:Disconnect() end
+end)
+while not soundFinished do task.wait(0.1) end
+
+if targetModel then restoreModelExceptRootPart(targetModel) end
+
+if laser1FollowConnection then laser1FollowConnection:Disconnect() end
+if laser2FollowConnection then laser2FollowConnection:Disconnect() end
+
+if laser1Model and laser1Model.Parent then laser1Model:Destroy() end
+if laser2Model and laser2Model.Parent then laser2Model:Destroy() end
+if sound and sound.Parent then sound:Destroy() end
+end
+
 function entityBehaviors.DEBUGONE()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -5049,6 +5713,229 @@ if sound and sound.Parent then
 end
 end
 
+function entityBehaviors.bsgay()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("sppvve")
+if not target then
+    return
+end
+
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("AAAAAAAAAAAAA")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://126372489354809")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "AAAAAAA"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 0
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
+
+function entityBehaviors.bsseek()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("A_Yun66")
+if not target then
+    return
+end
+local walkAnimationId = "rbxassetid://10729087054"
+local idleAnimationId = "rbxassetid://87364105526050"
+local walkAnimationTrack = nil
+local idleAnimationTrack = nil
+local isMoving = false
+local lastPosition = nil
+local moveThreshold = 0.015
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+target.CharacterAdded:Connect(function(character)
+    wait(0.55)
+    makePlayerTransparent(character)
+end)
+local model = ReplicatedStorage:FindFirstChild("SeekRig")
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://111986263973034")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "SeekRig"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+local mainSeekRig = model:Clone()
+mainSeekRig.Parent = workspace
+if not mainSeekRig.PrimaryPart then
+    for _, part in pairs(mainSeekRig:GetDescendants()) do
+        if part:IsA("BasePart") then
+            mainSeekRig.PrimaryPart = part
+            break
+        end
+    end
+end
+if not mainSeekRig.PrimaryPart then
+    return
+end
+local function setupAnimationsInNestedSeekRig(parentModel)
+    local innerSeekRig = parentModel:FindFirstChild("SeekRig")
+    if not innerSeekRig or not innerSeekRig:IsA("Model") then
+        return nil, nil
+    end
+    local animationController = innerSeekRig:FindFirstChildWhichIsA("AnimationController")
+    if not animationController then
+        return nil, nil
+    end
+    local animator = animationController:FindFirstChildWhichIsA("Animator")
+    if not animator then
+        return nil, nil
+    end
+    local walkAnimation = Instance.new("Animation")
+    walkAnimation.AnimationId = walkAnimationId
+    local idleAnimation = Instance.new("Animation")
+    idleAnimation.AnimationId = idleAnimationId
+    local walkSuccess, walkTrack = pcall(function()
+        return animator:LoadAnimation(walkAnimation)
+    end)
+    local idleSuccess, idleTrack = pcall(function()
+        return animator:LoadAnimation(idleAnimation)
+    end)
+    if walkSuccess and walkTrack then
+        walkTrack.Looped = true
+    else
+        walkTrack = nil
+    end
+    if idleSuccess and idleTrack then
+        idleTrack.Looped = true
+    else
+        idleTrack = nil
+    end
+    return walkTrack, idleTrack
+end
+walkAnimationTrack, idleAnimationTrack = setupAnimationsInNestedSeekRig(mainSeekRig)
+local heightOffset = -0.5
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    local currentPosition = humanoidRootPart.Position
+    if lastPosition then
+        local distance = (currentPosition - lastPosition).Magnitude
+        local nowMoving = distance > moveThreshold
+        if nowMoving and not isMoving then
+            isMoving = true
+            if walkAnimationTrack then
+                walkAnimationTrack:Play()
+            end
+            if idleAnimationTrack then
+                idleAnimationTrack:Stop()
+            end
+        elseif not nowMoving and isMoving then
+            isMoving = false
+            if walkAnimationTrack then
+                walkAnimationTrack:Stop()
+            end
+            if idleAnimationTrack then
+                idleAnimationTrack:Play()
+            end
+        end
+    end
+    lastPosition = currentPosition
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    if mainSeekRig.PrimaryPart then
+        mainSeekRig:SetPrimaryPartCFrame(newCFrame)
+    end
+end)
+end
+
 local entityConfig = {
     ["rbxassetid://129108783729677"]  = entityBehaviors.TwoKane1, 
     ["rbxassetid://119672184905651"]  = entityBehaviors.Angler,      
@@ -5072,7 +5959,15 @@ local entityConfig = {
     ["rbxassetid://83225089316779"]  = entityBehaviors.JEFFGUNST,
     ["rbxassetid://14093035297"]  = entityBehaviors.REBOUNDSW,
     ["rbxassetid://138242563639945"]  = entityBehaviors.luckblock1,
-["rbxassetid://139660109011119"]  = entityBehaviors.DEBUGONE,
+    ["rbxassetid://139660109011119"]  = entityBehaviors.DEBUGONE,
+    ["rbxassetid://82747438998584"]  = entityBehaviors.SHOOPTWO,
+    ["rbxassetid://100685649863483"]  = entityBehaviors.bswhoop,
+    ["rbxassetid://139899811957414"]  = entityBehaviors.bsripper,
+    ["rbxassetid://17663852143"]  = entityBehaviors.bsdeer,
+    ["rbxassetid://103505137367929"]  = entityBehaviors.bsfigure,
+    ["rbxassetid://86957606632676"]  = entityBehaviors.bsgay,
+    ["rbxassetid://128032522960947"]  = entityBehaviors.bsrebound,
+    ["rbxassetid://3007484871"]  = entityBehaviors.bsseek,
     ["rbxassetid://139371088930869"]  = entityBehaviors.GUIDINGNEW
 }
 

@@ -495,25 +495,67 @@ task.wait(1)
 StartRoomListener()
 ---------
 local Players = game:GetService("Players")
-
+local Workspace = game:GetService("Workspace")
 local function UpdateUI(player)
-    local mainUI = player:WaitForChild("PlayerGui"):WaitForChild("MainUI")
-    local jumpscare = mainUI:WaitForChild("Jumpscare")
-    
-    local a90 = jumpscare:WaitForChild("Jumpscare_A90")
-    local face = a90:FindFirstChild("Face")
-    local faceAngry = a90:FindFirstChild("FaceAngry")
-    
-    if face then face.Image = "rbxassetid://12635832722" end
-    if faceAngry then faceAngry.Image = "rbxassetid://12635955412" end
-    
-    jumpscare:WaitForChild("Jumpscare_Ambush"):WaitForChild("ImageLabel").Image = "rbxassetid://11684545361"
+	local mainUI = player.PlayerGui:WaitForChild("MainUI")
+	local jumpscare = mainUI:WaitForChild("Jumpscare")
+	
+	local a90 = jumpscare:WaitForChild("Jumpscare_A90")
+	if a90.Face then a90.Face.Image = "rbxassetid://12635832722" end
+	if a90.FaceAngry then a90.FaceAngry.Image = "rbxassetid://12635955412" end
+	
+	jumpscare:WaitForChild("Jumpscare_Ambush").ImageLabel.Image = "rbxassetid://11684545361"
 end
 
 for _, player in ipairs(Players:GetPlayers()) do
-    task.spawn(UpdateUI, player)
+	if player.Character then UpdateUI(player) end
+	player.CharacterAdded:Connect(function() UpdateUI(player) end)
 end
 
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function() UpdateUI(player) end)
+end)
+
+local CurrentRooms = Workspace:FindFirstChild("CurrentRooms")
+local newSoundId = "rbxassetid://139882610901041"
+
+local function replaceDoorSound(doorModel)
+	local doorPart = doorModel:FindFirstChild("Door")
+	if doorPart and (doorPart:IsA("MeshPart") or doorPart:IsA("BasePart")) then
+		local openSound = doorPart:FindFirstChild("Open")
+		if openSound and openSound:IsA("Sound") then
+			openSound.SoundId = newSoundId
+		end
+	end
+end
+
+local function processRoom(room)
+	for _, child in ipairs(room:GetChildren()) do
+		if child.Name == "Door" and child:IsA("Model") then
+			replaceDoorSound(child)
+		end
+	end
+	
+	room.ChildAdded:Connect(function(child)
+		if child.Name == "Door" and child:IsA("Model") then
+			replaceDoorSound(child)
+		end
+	end)
+end
+
+if CurrentRooms then
+	for _, room in ipairs(CurrentRooms:GetChildren()) do
+		if room:IsA("Model") then
+			processRoom(room)
+		end
+	end
+	
+	CurrentRooms.ChildAdded:Connect(function(room)
+		if room:IsA("Model") then
+			processRoom(room)
+		end
+	end)
+end
 Players.PlayerAdded:Connect(UpdateUI)
 local hint = Instance.new("Hint", Workspace)
 hint.Text = "LoadingMusic... Doors HardCore V9.9 By Mr.key & HeavenNow :)"
