@@ -496,65 +496,109 @@ StartRoomListener()
 ---------
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local function UpdateUI(player)
-	local mainUI = player.PlayerGui:WaitForChild("MainUI")
-	local jumpscare = mainUI:WaitForChild("Jumpscare")
-	
-	local a90 = jumpscare:WaitForChild("Jumpscare_A90")
-	if a90.Face then a90.Face.Image = "rbxassetid://12635832722" end
-	if a90.FaceAngry then a90.FaceAngry.Image = "rbxassetid://12635955412" end
-	
-	jumpscare:WaitForChild("Jumpscare_Ambush").ImageLabel.Image = "rbxassetid://11684545361"
-end
 
+local function UpdateUI(player)
+
+    if not player or not player.Parent then
+        return
+    end
+  
+    local success, mainUI = pcall(function()
+        return player:WaitForChild("PlayerGui"):WaitForChild("MainUI")
+    end)
+    
+    if not success or not mainUI then
+        return
+    end
+    
+    local success2, jumpscare = pcall(function()
+        return mainUI:WaitForChild("Jumpscare")
+    end)
+    
+    if not success2 or not jumpscare then
+        return
+    end
+
+    local a90 = jumpscare:FindFirstChild("Jumpscare_A90")
+    if a90 then
+        local face = a90:FindFirstChild("Face")
+        if face then face.Image = "rbxassetid://12635832722" end
+        
+        local faceAngry = a90:FindFirstChild("FaceAngry")
+        if faceAngry then faceAngry.Image = "rbxassetid://12635955412" end
+    end
+    
+    local ambush = jumpscare:FindFirstChild("Jumpscare_Ambush")
+    if ambush and ambush:FindFirstChild("ImageLabel") then
+        ambush.ImageLabel.Image = "rbxassetid://11684545361"
+    end
+end
 for _, player in ipairs(Players:GetPlayers()) do
-	if player.Character then UpdateUI(player) end
-	player.CharacterAdded:Connect(function() UpdateUI(player) end)
+    task.spawn(function()
+        task.wait(1)
+        UpdateUI(player)
+    end)
+
+    player.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        UpdateUI(player)
+    end)
 end
 
 Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function() UpdateUI(player) end)
+    task.spawn(function()
+        task.wait(2)
+        UpdateUI(player)
+    end)
+    
+    player.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        UpdateUI(player)
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
 end)
 
 local CurrentRooms = Workspace:FindFirstChild("CurrentRooms")
 local newSoundId = "rbxassetid://139882610901041"
 
 local function replaceDoorSound(doorModel)
-	local doorPart = doorModel:FindFirstChild("Door")
-	if doorPart and (doorPart:IsA("MeshPart") or doorPart:IsA("BasePart")) then
-		local openSound = doorPart:FindFirstChild("Open")
-		if openSound and openSound:IsA("Sound") then
-			openSound.SoundId = newSoundId
-		end
-	end
+    local doorPart = doorModel:FindFirstChild("Door")
+    if doorPart and (doorPart:IsA("MeshPart") or doorPart:IsA("BasePart")) then
+        local openSound = doorPart:FindFirstChild("Open")
+        if openSound and openSound:IsA("Sound") then
+            openSound.SoundId = newSoundId
+        end
+    end
 end
 
 local function processRoom(room)
-	for _, child in ipairs(room:GetChildren()) do
-		if child.Name == "Door" and child:IsA("Model") then
-			replaceDoorSound(child)
-		end
-	end
-	
-	room.ChildAdded:Connect(function(child)
-		if child.Name == "Door" and child:IsA("Model") then
-			replaceDoorSound(child)
-		end
-	end)
+    for _, child in ipairs(room:GetChildren()) do
+        if child.Name == "Door" and child:IsA("Model") then
+            replaceDoorSound(child)
+        end
+    end
+    
+    room.ChildAdded:Connect(function(child)
+        if child.Name == "Door" and child:IsA("Model") then
+            replaceDoorSound(child)
+        end
+    end)
 end
 
 if CurrentRooms then
-	for _, room in ipairs(CurrentRooms:GetChildren()) do
-		if room:IsA("Model") then
-			processRoom(room)
-		end
-	end
-	
-	CurrentRooms.ChildAdded:Connect(function(room)
-		if room:IsA("Model") then
-			processRoom(room)
-		end
-	end)
+    for _, room in ipairs(CurrentRooms:GetChildren()) do
+        if room:IsA("Model") then
+            processRoom(room)
+        end
+    end
+    
+    CurrentRooms.ChildAdded:Connect(function(room)
+        if room:IsA("Model") then
+            processRoom(room)
+        end
+    end)
 end
 Players.PlayerAdded:Connect(UpdateUI)
 local hint = Instance.new("Hint", Workspace)
