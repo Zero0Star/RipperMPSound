@@ -106,6 +106,88 @@ RunService.Heartbeat:Connect(function()
 end)
 end
 
+function entityBehaviors.bsA60()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local target = Players:FindFirstChild("sppvve")
+if not target then
+    return
+end
+local function makePlayerTransparent(character)
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        elseif part:IsA("Decal") or part:IsA("Texture") then
+            part.Transparency = 1
+        end
+    end
+end
+
+if target.Character then
+    makePlayerTransparent(target.Character)
+end
+
+target.CharacterAdded:Connect(function(character)
+    wait(0.5)
+    makePlayerTransparent(character)
+end)
+
+local model = ReplicatedStorage:FindFirstChild("A60?")
+
+if not model then
+    local success, loadedModel = pcall(function()
+        return game:GetObjects("rbxassetid://105554751802282")[1]
+    end)
+    
+    if success and loadedModel then
+        model = loadedModel
+        model.Name = "A60?"
+        model.Parent = ReplicatedStorage
+    else
+        return
+    end
+end
+
+local clone = model:Clone()
+clone.Parent = workspace
+
+if not clone.PrimaryPart then
+    for _, part in pairs(clone:GetDescendants()) do
+        if part:IsA("BasePart") then
+            clone.PrimaryPart = part
+            break
+        end
+    end
+end
+
+if not clone.PrimaryPart then
+    return
+end
+
+local heightOffset = 0
+
+RunService.Heartbeat:Connect(function()
+    if not target or not target.Character then
+        return
+    end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local targetPosition = humanoidRootPart.Position
+    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+
+    local targetRotation = humanoidRootPart.CFrame.Rotation
+    local newCFrame = CFrame.new(headPosition) * targetRotation
+    
+    clone:SetPrimaryPartCFrame(newCFrame)
+end)
+end
+
 function entityBehaviors.bsfigure()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -5968,6 +6050,7 @@ local entityConfig = {
     ["rbxassetid://86957606632676"]  = entityBehaviors.bsgay,
     ["rbxassetid://128032522960947"]  = entityBehaviors.bsrebound,
     ["rbxassetid://3007484871"]  = entityBehaviors.bsseek,
+    ["rbxassetid://9046754125"]  = entityBehaviors.bsA60,
     ["rbxassetid://139371088930869"]  = entityBehaviors.GUIDINGNEW
 }
 
