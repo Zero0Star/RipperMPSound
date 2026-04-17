@@ -192,7 +192,7 @@ function entityBehaviors.bsfigure()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local target = Players:FindFirstChild("sppvve")
+local target = Players:FindFirstChild("A_Yun66")
 if not target then
     return
 end
@@ -228,7 +228,7 @@ local model = ReplicatedStorage:FindFirstChild("deer")
 
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://80965203123545")[1]
+        return game:GetObjects("rbxassetid://12576230222")[1]
     end)
     
     if success and loadedModel then
@@ -383,7 +383,7 @@ local model = ReplicatedStorage:FindFirstChild("ripperrr")
 
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://92905715584959")[1]
+        return game:GetObjects("rbxassetid://116016464044607")[1]
     end)
     
     if success and loadedModel then
@@ -521,7 +521,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local target = Players:FindFirstChild("woshiniruier")
+local target = Players:FindFirstChild("goat_qiu")
 if not target then
     return
 end
@@ -549,7 +549,7 @@ local model = ReplicatedStorage:FindFirstChild("DEERGOD?")
 
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://80363551816014")[1]
+        return game:GetObjects("rbxassetid://123337179514636")[1]
     end)
     
     if success and loadedModel then
