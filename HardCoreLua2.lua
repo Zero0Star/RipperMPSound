@@ -5339,7 +5339,305 @@ function CustomGitSound(soundlink, vol, filename)
     sound:Play()
     return sound
 end
+local testModelId = 91513050415504
 
+local function GetMaxExistingRoom()
+    local rooms = workspace.CurrentRooms:GetChildren()
+    local maxNum = 0
+    for _, room in ipairs(rooms) do
+        local num = tonumber(room.Name)
+        if num and num > maxNum then
+            maxNum = num
+        end
+    end
+    return maxNum
+end
+
+function SpawnReboundEntity(startRoomType)
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj.Name == "Rebound" then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+
+    local success, modelResult = pcall(function()
+        return game:GetObjects("rbxassetid://" .. testModelId)[1]
+    end)
+
+    if not success or not modelResult then
+        return
+    end
+
+    local testEntity = modelResult:Clone()
+    testEntity.Parent = workspace
+    testEntity.Name = "Rebound"
+
+    local primaryPart = testEntity.PrimaryPart or testEntity:FindFirstChildWhichIsA("BasePart")
+    if not primaryPart then
+        testEntity:Destroy()
+        return
+    end
+
+    primaryPart.Anchored = true
+    primaryPart.CanCollide = false
+
+    spawn(function()
+        local targetRoom
+        if startRoomType == "start" then
+            targetRoom = workspace.CurrentRooms:FindFirstChild("0")
+        else
+            local maxRoom = GetMaxExistingRoom()
+            targetRoom = workspace.CurrentRooms:FindFirstChild(tostring(maxRoom))
+        end
+        
+        if targetRoom then
+            local targetCFrame
+            if targetRoom:FindFirstChild("Nodes") then
+                targetCFrame = (targetRoom:FindFirstChild("RoomEntrance") or targetRoom:FindFirstChild("RoomExit")).CFrame
+            else
+                targetCFrame = targetRoom.RoomExit.CFrame
+            end
+            primaryPart.CFrame = targetCFrame + Vector3.new(0, 3.5, 0)
+        end
+        
+        wait(2)
+        StartEntityLogic(primaryPart, startRoomType)
+    end)
+end
+
+function StartEntityLogic(primaryPart, startRoomType)
+    local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+    local camera = workspace.CurrentCamera
+    local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
+        camera.CFrame = camera.CFrame * cf
+    end)
+    camShake:Start()
+
+    local v305 = 2
+    local v306 = 2
+    local v307 = Vector3.new(0, 3.5, 0)
+    local v310 = workspace.CurrentRooms
+
+    local detectedPlayer = false
+    local shakeCooldown = 0
+    
+    local function CheckLineOfSight(entityPart, player, maxDistance)
+        if not entityPart or not player or not player.Character then
+            return false
+        end
+        if player.Character:GetAttribute("Hiding") then
+            return false
+        end
+        
+        local hum = player.Character:FindFirstChildWhichIsA("Humanoid")
+        if not hum or hum.Health <= 0 then
+            return false
+        end
+        
+        local origin = entityPart.Position
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return false end
+        
+        local targetPos = hrp.Position
+        local distance = (targetPos - origin).Magnitude
+        
+        local direction = (targetPos - origin).Unit * maxDistance
+        local ray = Ray.new(origin, direction)
+        local hitPart, _ = workspace:FindPartOnRay(ray, entityPart)
+        
+        return hitPart and hitPart:IsDescendantOf(player.Character)
+    end
+
+    local function ExecutePlayer()
+        if detectedPlayer then return end
+        detectedPlayer = true
+
+        local vu321 = Instance.new("ScreenGui")
+        local vu322 = Instance.new("ImageLabel")
+        local v323 = Instance.new("ImageLabel")
+        local v324 = Instance.new("ImageLabel")
+        
+        vu321.Name = "TestEntityJs"
+        vu321.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        
+        vu322.Name = "Static"
+        vu322.Parent = vu321
+        vu322.BackgroundColor3 = Color3.fromRGB(0, 63, 139)
+        vu322.BackgroundTransparency = 1
+        vu322.BorderSizePixel = 0
+        vu322.Size = UDim2.new(1, 0, 1, 0)
+        vu322.Image = "rbxassetid://236543215"
+        vu322.ImageColor3 = Color3.fromRGB(0, 255, 255)
+        vu322.ImageTransparency = 1
+        
+        v323.Name = "TestEntity"
+        v323.Parent = vu321
+        v323.BackgroundTransparency = 1
+        v323.Position = UDim2.new(0.486631036, 0, 0.479363143, 0)
+        v323.Size = UDim2.new(0.0267379656, 0, 0.0387096703, 0)
+        v323.Image = "rbxassetid://97823818277141"
+        
+        v324.Name = "JSSIZE"
+        v324.Parent = vu321
+        v324.BackgroundTransparency = 1
+        v324.Position = UDim2.new(-0.586452842, 0, -1.25140607, 0)
+        v324.Size = UDim2.new(2.12834215, 0, 3.08128953, 0)
+        v324.Visible = false
+        v324.Image = "rbxassetid://10914800940"
+
+        local function v326()
+            local v325 = Instance.new("LocalScript", vu322)
+            while v325.Parent and v325.Parent.Parent do
+                v325.Parent.Image = "rbxassetid://236543215"
+                wait(0.002)
+                v325.Parent.Rotation = 0
+                wait(0.002)
+                v325.Parent.Rotation = 180
+                wait(0.002)
+                v325.Parent.Image = "rbxassetid://236777652"
+                wait(0.002)
+                v325.Parent.Rotation = 0
+                wait(0.002)
+                v325.Parent.Rotation = 180
+                wait(0.002)
+            end
+        end
+        coroutine.wrap(v326)()
+
+        local v327 = Instance.new("LocalScript", vu321)
+        local vu328 = game.ReplicatedStorage
+        local vu329 = game.Players.LocalPlayer
+        local vu330 = v327.Parent
+        local vu331 = vu330.Static
+        local vu332 = vu330.TestEntity
+        
+        local killSound = Instance.new("Sound")
+        killSound.SoundId = "rbxassetid://94785993416953"
+        killSound.Parent = workspace
+        killSound.Volume = 2
+
+        (function()
+            game.TweenService:Create(vu331, TweenInfo.new(0.5), {
+                BackgroundTransparency = 0,
+                ImageTransparency = 0.8
+            }):Play()
+            
+            game.TweenService:Create(vu332, TweenInfo.new(0.5), {
+                Size = v324.Size,
+                Position = v324.Position
+            }):Play()
+            
+            killSound:Play()
+            
+            spawn(function()
+                wait(0.3)
+                local char = vu329.Character
+                if char then
+                    local hum = char:FindFirstChildWhichIsA("Humanoid")
+                    if hum then
+                        hum:TakeDamage(100)
+                        if vu328.GameStats["Player_" .. vu329.Name] then
+                            vu328.GameStats["Player_" .. vu329.Name].Total.DeathCause.Value = "Rebound"
+                        end
+
+firesignal(game.ReplicatedStorage.RemotesFolder.DeathHint.OnClientEvent, {
+    "你死于Rebound...",
+    "巨大的噪音震耳欲聋...",
+    "每当开启一次门时注意雷声..."
+}, "Blue")
+                    end
+                end
+            end)
+            
+            wait(0.5)
+            game.TweenService:Create(vu331, TweenInfo.new(1), {
+                BackgroundTransparency = 1,
+                ImageTransparency = 1
+            }):Play()
+            game.TweenService:Create(vu332, TweenInfo.new(0.3), {
+                ImageTransparency = 1
+            }):Play()
+            wait(1)
+            killSound:Destroy()
+            vu330:Destroy()
+        end)()
+    end
+
+    spawn(function()
+        local player = game.Players.LocalPlayer
+        while primaryPart and primaryPart.Parent do
+            wait(0.5)
+            if workspace:FindFirstChild("SeekMovingNewClone") or workspace.CurrentRooms:FindFirstChild("50") then
+                break
+            end
+
+            if CheckLineOfSight(primaryPart, player, 100) then
+                ExecutePlayer()
+            end
+        end
+    end)
+
+    if startRoomType == "start" then
+        local currentRoom = 0
+        local maxRoom = game.ReplicatedStorage.GameData.LatestRoom.Value
+
+        while currentRoom <= maxRoom do
+            if workspace:FindFirstChild("SeekMovingNewClone") or workspace.CurrentRooms:FindFirstChild("50") then
+                break
+            end
+
+            local targetRoom = v310:FindFirstChild(currentRoom)
+            if targetRoom then
+                local targetCFrame
+                if targetRoom:FindFirstChild("Nodes") then
+                    targetCFrame = (targetRoom:FindFirstChild("RoomEntrance") or targetRoom:FindFirstChild("RoomExit")).CFrame
+                else
+                    targetCFrame = targetRoom.RoomExit.CFrame
+                end
+
+                game.TweenService:Create(primaryPart, TweenInfo.new(v305), {
+                    CFrame = targetCFrame + v307
+                }):Play()
+                
+                wait(v306)
+            end
+
+            maxRoom = game.ReplicatedStorage.GameData.LatestRoom.Value
+            currentRoom = currentRoom + 1
+        end
+    else
+        local currentRoom = GetMaxExistingRoom()
+        local minRoom = math.max(0, currentRoom - 3)
+
+        while currentRoom >= minRoom do
+            if workspace:FindFirstChild("SeekMovingNewClone") or workspace.CurrentRooms:FindFirstChild("50") then
+                break
+            end
+
+            local targetRoom = v310:FindFirstChild(currentRoom)
+            if targetRoom then
+                local targetCFrame
+                if targetRoom:FindFirstChild("Nodes") then
+                    targetCFrame = (targetRoom:FindFirstChild("RoomEntrance") or targetRoom:FindFirstChild("RoomExit")).CFrame
+                else
+                    targetCFrame = targetRoom.RoomExit.CFrame
+                end
+
+                game.TweenService:Create(primaryPart, TweenInfo.new(v305), {
+                    CFrame = targetCFrame + v307
+                }):Play()
+                
+                wait(v306)
+            end
+
+            minRoom = math.max(0, game.ReplicatedStorage.GameData.LatestRoom.Value - 7)
+            currentRoom = currentRoom - 1
+        end
+    end
+
+    primaryPart.Anchored = false
+    primaryPart.CanCollide = false
+end
 for _, obj in pairs(workspace:GetChildren()) do
     if obj.Name == "Rebound" or obj.Name == "Bound" or obj.Name:find("ReboundMovings") or obj.Name:find("ReboundSweep") then
         pcall(function() obj:Destroy() end)
@@ -5374,48 +5672,10 @@ camShake:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
 wait(3)
 
 local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
-local entity1 = spawner.Create({
-    Entity = {Name = "Rebound", Asset = "91513050415504", HeightOffset = 3},
-    Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
-    Earthquake = {Enabled = false},
-    CameraShake = {Enabled = true, Range = 200, Values = {1.5, 20, 0.1, 1}},
-    Movement = {Speed = 120, Delay = 5, Reversed = true},
-    Rebounding = {Enabled = false, Type = "ambush", Min = 4, Max = 4, Delay = math.random(10, 30) / 10},
-    Damage = {Enabled = true, Range = 100, Amount = 1},
-    Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
-    Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
-})
+
+SpawnReboundEntity("latest")
 
 local sound1 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings1")
-entity1:SetCallback("OnRebounding", function(startOfRebound)
-    local entityModel = entity1.Model
-    local main = entityModel:WaitForChild("Main")
-    local attachment = main:WaitForChild("Attachment")
-    local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
-    local sounds = {
-        footsteps = main:WaitForChild("Footsteps"),
-        playSound = main:WaitForChild("PlaySound"),
-        switch = main:WaitForChild("Switch"),
-        switchBack = main:WaitForChild("SwitchBack")
-    }
-    for _, c in attachment:GetChildren() do
-        c.Enabled = (not startOfRebound)
-    end
-    for _, c in AttachmentSwitch:GetChildren() do
-        c.Enabled = startOfRebound
-    end
-    if startOfRebound == true then
-        sounds.footsteps.PlaybackSpeed = 0.35
-        sounds.playSound.PlaybackSpeed = 0.25
-        sounds.switch:Play()
-    else
-        sounds.footsteps.PlaybackSpeed = 0.25
-        sounds.playSound.PlaybackSpeed = 0.16
-        sounds.switchBack:Play()
-    end
-end)
-entity1:Run()
-
 if sound1 then
     repeat
         wait()
@@ -5423,17 +5683,8 @@ if sound1 then
     sound1:Destroy()
 end
 game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-local entity2 = spawner.Create({
-    Entity = {Name = "Rebound", Asset = "91513050415504", HeightOffset = 3},
-    Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
-    Earthquake = {Enabled = false},
-    CameraShake = {Enabled = true, Range = 200, Values = {1.5, 20, 0.1, 1}},
-    Movement = {Speed = 120, Delay = 5, Reversed = false},
-    Rebounding = {Enabled = false, Type = "ambush", Min = 4, Max = 4, Delay = math.random(10, 30) / 10},
-    Damage = {Enabled = true, Range = 100, Amount = 1},
-    Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
-    Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
-})
+SpawnReboundEntity("start")
+
 local CameraShaker2 = require(game.ReplicatedStorage.CameraShaker)
 local camara2 = game.Workspace.CurrentCamera
 local camShake2 = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
@@ -5442,34 +5693,6 @@ end)
 camShake2:Start()
 camShake2:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
 local sound2 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings2")
-entity2:SetCallback("OnRebounding", function(startOfRebound)
-    local entityModel = entity2.Model
-    local main = entityModel:WaitForChild("Main")
-    local attachment = main:WaitForChild("Attachment")
-    local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
-    local sounds = {
-        footsteps = main:WaitForChild("Footsteps"),
-        playSound = main:WaitForChild("PlaySound"),
-        switch = main:WaitForChild("Switch"),
-        switchBack = main:WaitForChild("SwitchBack")
-    }
-    for _, c in attachment:GetChildren() do
-        c.Enabled = (not startOfRebound)
-    end
-    for _, c in AttachmentSwitch:GetChildren() do
-        c.Enabled = startOfRebound
-    end
-    if startOfRebound == true then
-        sounds.footsteps.PlaybackSpeed = 0.35
-        sounds.playSound.PlaybackSpeed = 0.25
-        sounds.switch:Play()
-    else
-        sounds.footsteps.PlaybackSpeed = 0.25
-        sounds.playSound.PlaybackSpeed = 0.16
-        sounds.switchBack:Play()
-    end
-end)
-entity2:Run()
 if sound2 then
     repeat
         wait()
@@ -5477,17 +5700,9 @@ if sound2 then
     sound2:Destroy()
 end
 game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-local entity3 = spawner.Create({
-    Entity = {Name = "Rebound", Asset = "91513050415504", HeightOffset = 3},
-    Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
-    Earthquake = {Enabled = false},
-    CameraShake = {Enabled = true, Range = 200, Values = {1.5, 20, 0.1, 1}},
-    Movement = {Speed = 120, Delay = 5, Reversed = true},
-    Rebounding = {Enabled = false, Type = "ambush", Min = 4, Max = 4, Delay = math.random(10, 30) / 10},
-    Damage = {Enabled = true, Range = 100, Amount = 1},
-    Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
-    Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
-})
+
+SpawnReboundEntity("latest")
+
 local CameraShaker3 = require(game.ReplicatedStorage.CameraShaker)
 local camara3 = game.Workspace.CurrentCamera
 local camShake3 = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
@@ -5496,34 +5711,6 @@ end)
 camShake3:Start()
 camShake3:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
 local sound3 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings3")
-entity3:SetCallback("OnRebounding", function(startOfRebound)
-    local entityModel = entity3.Model
-    local main = entityModel:WaitForChild("Main")
-    local attachment = main:WaitForChild("Attachment")
-    local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
-    local sounds = {
-        footsteps = main:WaitForChild("Footsteps"),
-        playSound = main:WaitForChild("PlaySound"),
-        switch = main:WaitForChild("Switch"),
-        switchBack = main:WaitForChild("SwitchBack")
-    }
-    for _, c in attachment:GetChildren() do
-        c.Enabled = (not startOfRebound)
-    end
-    for _, c in AttachmentSwitch:GetChildren() do
-        c.Enabled = startOfRebound
-    end
-    if startOfRebound == true then
-        sounds.footsteps.PlaybackSpeed = 0.35
-        sounds.playSound.PlaybackSpeed = 0.25
-        sounds.switch:Play()
-    else
-        sounds.footsteps.PlaybackSpeed = 0.25
-        sounds.playSound.PlaybackSpeed = 0.16
-        sounds.switchBack:Play()
-    end
-end)
-entity3:Run()
 if sound3 then
     repeat
         wait()
@@ -5531,17 +5718,9 @@ if sound3 then
     sound3:Destroy()
 end
 game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
-local entity4 = spawner.Create({
-    Entity = {Name = "Rebound", Asset = "91513050415504", HeightOffset = 3},
-    Lights = {Flicker = {Enabled = false, Duration = 10}, Shatter = false, Repair = false},
-    Earthquake = {Enabled = false},
-    CameraShake = {Enabled = true, Range = 200, Values = {1.5, 20, 0.1, 1}},
-    Movement = {Speed = 120, Delay = 5, Reversed = false},
-    Rebounding = {Enabled = false, Type = "ambush", Min = 4, Max = 4, Delay = math.random(10, 30) / 10},
-    Damage = {Enabled = true, Range = 100, Amount = 1},
-    Crucifixion = {Enabled = true, Range = 100, Resist = false, Break = true},
-    Death = {Type = "Guiding", Hints = {"你死于Rebound", "巨大的噪音震耳欲聋", "保持时刻警惕它的存在", "祝你好运"}, Cause = ""}
-})
+
+SpawnReboundEntity("start")
+
 local CameraShaker4 = require(game.ReplicatedStorage.CameraShaker)
 local camara4 = game.Workspace.CurrentCamera
 local camShake4 = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
@@ -5550,34 +5729,6 @@ end)
 camShake4:Start()
 camShake4:ShakeOnce(10, 3, 0.1, 6, 2, 0.5)
 local sound4 = CustomGitSound("https://github.com/Zero0Star/RipperMPSound/blob/master/ReboundMovings.mp3?raw=true", 3, "ReboundMovings4")
-entity4:SetCallback("OnRebounding", function(startOfRebound)
-    local entityModel = entity4.Model
-    local main = entityModel:WaitForChild("Main")
-    local attachment = main:WaitForChild("Attachment")
-    local AttachmentSwitch = main:WaitForChild("AttachmentSwitch")
-    local sounds = {
-        footsteps = main:WaitForChild("Footsteps"),
-        playSound = main:WaitForChild("PlaySound"),
-        switch = main:WaitForChild("Switch"),
-        switchBack = main:WaitForChild("SwitchBack")
-    }
-    for _, c in attachment:GetChildren() do
-        c.Enabled = (not startOfRebound)
-    end
-    for _, c in AttachmentSwitch:GetChildren() do
-        c.Enabled = startOfRebound
-    end
-    if startOfRebound == true then
-        sounds.footsteps.PlaybackSpeed = 0.35
-        sounds.playSound.PlaybackSpeed = 0.25
-        sounds.switch:Play()
-    else
-        sounds.footsteps.PlaybackSpeed = 0.25
-        sounds.playSound.PlaybackSpeed = 0.16
-        sounds.switchBack:Play()
-    end
-end)
-entity4:Run()
 if sound4 then
     repeat
         wait()
