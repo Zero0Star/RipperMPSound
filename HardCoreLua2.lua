@@ -138,7 +138,7 @@ local model = ReplicatedStorage:FindFirstChild("A60")
 
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://128094439102524")[1]
+        return game:GetObjects("rbxassetid://16941131275")[1]
     end)
     
     if success and loadedModel then
