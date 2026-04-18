@@ -352,13 +352,12 @@ end)
 end
 
 function entityBehaviors.bsripper()
-local achievementGiver = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Custom%20Achievements/Source.lua"))()
-achievementGiver({
-Title = "Eternal of Land",
-Desc = "Escape the HardCore Hotel.",
-Reason = "Wait? This is too much like a nightmare.",
-Image = "rbxassetid://17412983060"
-})end
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Bro... although I really don't want to admit it",true)
+wait(2)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("You are very lucky because this effect has a 1/1000 chance.",true)
+wait(3)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("So...",true)
+end
 
 function entityBehaviors.bswhoop()
 local Players = game:GetService("Players")
@@ -5640,7 +5639,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local target = Players:FindFirstChild("sppvve")
+local target = Players:FindFirstChild("SparkleAtom")
 if not target then
     return
 end
@@ -5668,7 +5667,7 @@ local model = ReplicatedStorage:FindFirstChild("AAAAAAAAAAAAA")
 
 if not model then
     local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://77209842535346")[1]
+        return game:GetObjects("rbxassetid://88977699667808")[1]
     end)
     
     if success and loadedModel then
