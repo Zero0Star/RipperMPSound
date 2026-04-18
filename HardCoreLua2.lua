@@ -192,7 +192,7 @@ function entityBehaviors.bsfigure()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local target = Players:FindFirstChild("A_Yun66")
+local target = Players:FindFirstChild("sppvve")
 if not target then
     return
 end
@@ -5797,7 +5797,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local target = Players:FindFirstChild("sppvve")
+local target = Players:FindFirstChild("goat_qiu")
 if not target then
 	return
 end
