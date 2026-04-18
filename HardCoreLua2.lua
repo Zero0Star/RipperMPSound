@@ -355,7 +355,7 @@ function entityBehaviors.bsripper()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local target = Players:FindFirstChild("sppvve")
+local target = Players:FindFirstChild("QWQ75321")
 if not target then
     return
 end
@@ -5339,6 +5339,7 @@ function CustomGitSound(soundlink, vol, filename)
     sound:Play()
     return sound
 end
+
 local testModelId = 91513050415504
 
 local function GetMaxExistingRoom()
@@ -5354,6 +5355,7 @@ local function GetMaxExistingRoom()
 end
 
 function SpawnReboundEntity(startRoomType)
+
     for _, obj in pairs(workspace:GetChildren()) do
         if obj.Name == "Rebound" then
             pcall(function() obj:Destroy() end)
@@ -5386,6 +5388,7 @@ function SpawnReboundEntity(startRoomType)
         if startRoomType == "start" then
             targetRoom = workspace.CurrentRooms:FindFirstChild("0")
         else
+
             local maxRoom = GetMaxExistingRoom()
             targetRoom = workspace.CurrentRooms:FindFirstChild(tostring(maxRoom))
         end
@@ -5578,6 +5581,7 @@ firesignal(game.ReplicatedStorage.RemotesFolder.DeathHint.OnClientEvent, {
     end)
 
     if startRoomType == "start" then
+
         local currentRoom = 0
         local maxRoom = game.ReplicatedStorage.GameData.LatestRoom.Value
 
@@ -5606,6 +5610,7 @@ firesignal(game.ReplicatedStorage.RemotesFolder.DeathHint.OnClientEvent, {
             currentRoom = currentRoom + 1
         end
     else
+
         local currentRoom = GetMaxExistingRoom()
         local minRoom = math.max(0, currentRoom - 3)
 
@@ -5638,6 +5643,7 @@ firesignal(game.ReplicatedStorage.RemotesFolder.DeathHint.OnClientEvent, {
     primaryPart.Anchored = false
     primaryPart.CanCollide = false
 end
+
 for _, obj in pairs(workspace:GetChildren()) do
     if obj.Name == "Rebound" or obj.Name == "Bound" or obj.Name:find("ReboundMovings") or obj.Name:find("ReboundSweep") then
         pcall(function() obj:Destroy() end)
@@ -5683,6 +5689,7 @@ if sound1 then
     sound1:Destroy()
 end
 game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+
 SpawnReboundEntity("start")
 
 local CameraShaker2 = require(game.ReplicatedStorage.CameraShaker)
@@ -5734,215 +5741,6 @@ if sound4 then
         wait()
     until sound4.IsPlaying == false
     sound4:Destroy()
-end
-end
-
-function entityBehaviors.GUIDINGNEW()
-    for _, child in ipairs(GuidingLight:GetChildren()) do
-        print("  -", child.Name, "["..child.ClassName.."]")
-    end
-    if GuidingLight:IsA("Model") then
-        humanoid = Instance.new("Humanoid")
-        humanoid.Name = "Humanoid"local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://10460221938"
-sound.Volume = 2
-sound.Parent = workspace
-sound:Play()
-
-function GetRoom()
-    local gruh = workspace.CurrentRooms
-    return gruh:FindFirstChild(game.ReplicatedStorage.GameData.LatestRoom.Value)
-end
-
-local plr = game.Players.LocalPlayer
-local chr = plr.Character or plr.CharacterAdded:Wait()
-local tweenservice = game:GetService("TweenService")
-
-function LoadCustomInstance(source, parent)
-    local model
-
-    local function NormalizeGitHubURL(url)
-        if url:match("^https://github.com/.+%.rbxm$") and not url:find("?raw=true") then
-            return url .. "?raw=true"
-        end
-        return url
-    end
-
-    while task.wait() and not model do
-        if tonumber(source) then
-            local success, result = pcall(function()
-                return game:GetObjects("rbxassetid://" .. tostring(source))[1]
-            end)
-            if success and result then
-                model = result
-            end
-        elseif typeof(source) == "string" and source:match("^https?://") and source:match("%.rbxm") then
-            local url = NormalizeGitHubURL(source)
-            local success, result = pcall(function()
-                local filename = "temp_" .. math.random(100000, 999999) .. ".rbxm"
-                local content = game:HttpGet(url)
-                if writefile and (getcustomasset or getsynasset) and isfile and delfile then
-                    writefile(filename, content)
-                    local assetFunc = getcustomasset or getsynasset
-                    local obj = game:GetObjects(assetFunc(filename))[1]
-                    delfile(filename)
-                    return obj
-                else
-                    return nil
-                end
-            end)
-            if success and result then
-                model = result
-            end
-        else
-            break
-        end
-
-        if model then
-            model.Parent = parent or workspace
-            for _, obj in ipairs(model:GetDescendants()) do
-                if obj:IsA("Script") or obj:IsA("LocalScript") then
-                    obj:Destroy()
-                end
-            end
-            pcall(function()
-                model:SetAttribute("LoadedByExecutor", true)
-            end)
-        end
-    end
-
-    return model
-end
-
-local s = LoadCustomInstance(79757298507315, workspace)
-if not s then
-    return
-end
-
-local entity = s:FindFirstChildWhichIsA("BasePart")
-if entity then
-    entity.CFrame = GetRoom():WaitForChild("RoomEntrance").CFrame * CFrame.new(0, 3, -5)
-
-    local partInModel = s:FindFirstChildOfClass("Part")
-    if partInModel then
-        partInModel.CFrame = entity.CFrame
-    end
-end
-
-local RunService = game:GetService("RunService")
-local model = workspace:FindFirstChild("GuidingLight")
-
-if not model or not model.PrimaryPart then
-    return
-end
-
-local root = model.PrimaryPart
-local smoothness = 0.2
-local time = 0
-local lastUpdate = 0
-local UPDATE_INTERVAL = 1/60
-
-RunService.Heartbeat:Connect(function(deltaTime)
-    time = time + deltaTime
-    lastUpdate = lastUpdate + deltaTime
-    
-    if lastUpdate < UPDATE_INTERVAL then
-        return
-    end
-    
-    lastUpdate = 0
-    
-    local closestPlayer
-    local closestDistance = math.huge
-    local myPos = root.Position
-    
-    for _, player in pairs(game.Players:GetPlayers()) do
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local hrp = char.HumanoidRootPart
-            local dist = (hrp.Position - myPos).Magnitude
-            if dist < closestDistance then
-                closestDistance = dist
-                closestPlayer = hrp
-            end
-        end
-    end
-    
-    if closestPlayer then
-        local targetPos = closestPlayer.Position
-        local lookPos = Vector3.new(targetPos.X, myPos.Y, targetPos.Z)
-        
-        local currentCF = root.CFrame
-        local targetCF = CFrame.lookAt(myPos, lookPos)
-        
-        local newCFrame = currentCF:Lerp(targetCF, smoothness)
-        local _, y, _ = newCFrame:ToEulerAnglesYXZ()
-        
-        root.CFrame = CFrame.new(myPos) * CFrame.Angles(0, y, 0)
-    end
-end)
-
-local Workspace = game:GetService("Workspace")
-local GuidingLight = Workspace:FindFirstChild("GuidingLight")
-if not GuidingLight then
-    return
-end
-
-local humanoid = GuidingLight:FindFirstChildOfClass("Humanoid")
-if not humanoid then
-
-        humanoid.Parent = GuidingLight
-    else
-        return
-    end
-end
-
-local animator = humanoid:FindFirstChildOfClass("Animator")
-if not animator then
-    animator = Instance.new("Animator")
-    animator.Parent = humanoid
-end
-
-local animationId = "rbxassetid://101845046666732"
-local success, errorMsg = pcall(function()
-    local animation = Instance.new("Animation")
-    animation.AnimationId = animationId
-    animation.Name = "GuidingLightAnimation"
-    
-    local animationTrack = humanoid:LoadAnimation(animation)
-    if animationTrack then
-        animationTrack.Looped = true
-        animationTrack:Play()
-
-        wait(0.3)
-        if animationTrack.IsPlaying then
-        else
-        end
-        
-        return animationTrack
-    end
-    return nil
-end)
-if not success then
-else
-end
-local UserInputService = game:GetService("UserInputService")
-
-local function waitForSoundToEnd()
-    while sound.IsPlaying do
-        wait(1)
-    end
-end
-
-waitForSoundToEnd()
-
-if GuidingLight and GuidingLight.Parent then
-    GuidingLight:Destroy()
-end
-
-if sound and sound.Parent then
-    sound:Stop()
-    sound:Destroy()
 end
 end
 
