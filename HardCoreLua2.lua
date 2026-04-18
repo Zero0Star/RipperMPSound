@@ -772,86 +772,50 @@ end
 
 function entityBehaviors.DEBUGONE()
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
-local target = Players:FindFirstChild("sppvve")
-if not target then
-    return
-end
+local player = Players.LocalPlayer
+if not player or not player:FindFirstChild("PlayerGui") then return end
 
-local function makePlayerTransparent(character)
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.Transparency = 1
-        elseif part:IsA("Decal") or part:IsA("Texture") then
-            part.Transparency = 1
-        end
-    end
-end
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player.PlayerGui
+screenGui.Name = "BlackOverlay"
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.DisplayOrder = 2147483647
+screenGui.ResetOnSpawn = false 
 
-if target.Character then
-    makePlayerTransparent(target.Character)
-end
+local frame = Instance.new("Frame")
+frame.Parent = screenGui
+frame.Size = UDim2.new(1, 0, 1, 0)
+frame.Position = UDim2.new(0, 0, 0, 0)
+frame.AnchorPoint = Vector2.new(0, 0)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 1 
+frame.ZIndex = 1000
 
-target.CharacterAdded:Connect(function(character)
-    wait(0.5)
-    makePlayerTransparent(character)
+frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    frame.Size = UDim2.new(1, 0, 1, 0)
 end)
 
-local model = ReplicatedStorage:FindFirstChild("86112457302745")
+local sound = Instance.new("Sound")
+sound.SoundId = "rbxassetid://127988102685688"
+sound.Volume = 5
+sound.Parent = workspace
 
-if not model then
-    local success, loadedModel = pcall(function()
-        return game:GetObjects("rbxassetid://86112457302745")[1]
-    end)
-    
-    if success and loadedModel then
-        model = loadedModel
-        model.Name = "86112457302745"
-        model.Parent = ReplicatedStorage
-    else
-        return
-    end
+local function fadeTo(targetTransparency, duration)
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(frame, tweenInfo, {BackgroundTransparency = targetTransparency})
+    tween:Play()
+    return tween
 end
 
-local clone = model:Clone()
-clone.Parent = workspace
-
-if not clone.PrimaryPart then
-    for _, part in pairs(clone:GetDescendants()) do
-        if part:IsA("BasePart") then
-            clone.PrimaryPart = part
-            break
-        end
-    end
-end
-
-if not clone.PrimaryPart then
-    return
-end
-
-local heightOffset = 1
-
-RunService.Heartbeat:Connect(function()
-    if not target or not target.Character then
-        return
-    end
-    
-    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then
-        return
-    end
-    
-    local targetPosition = humanoidRootPart.Position
-    local headPosition = targetPosition + Vector3.new(0, heightOffset, 0)
-
-    local targetRotation = humanoidRootPart.CFrame.Rotation
-    local newCFrame = CFrame.new(headPosition) * targetRotation
-    
-    clone:SetPrimaryPartCFrame(newCFrame)
-end)
-end
+task.wait(1)
+local fadeInTween = fadeTo(0, 1)
+sound:Play()
+fadeInTween.Completed:Wait()
+fadeTo(1, 1).Completed:Wait()
+game.Debris:AddItem(screenGui, sound.TimeLength + 1)end
 function entityBehaviors.luckblock1()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
